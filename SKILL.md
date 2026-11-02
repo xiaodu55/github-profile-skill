@@ -27,19 +27,31 @@ python3 scripts/fetch_profile_facts.py --user <github-handle>
 
 脚本输出账号信息、仓库清单（star / 语言 / 描述）、语言分布、已合并 PR 总数与按仓库分组。详细字段与限流处理见 `references/intake.md`。
 
-只有脚本拿不到的才问用户，且一次问全：每个项目"做了什么"、上游贡献亮点、定位句、社交入口、是否中英双语、是否启用动态卡。缺数据的处理方式见 `references/intake.md` 的降级策略表。
+### 2. 采集个人信息（必问，不可跳过）
 
-### 2. 选范式
+**生成之前必须先问本人。** 主页里最容易编、也最影响可信度的是定位句、"做了什么"、专注方向、联系方式——这些公开接口拿不到，只能问。
+
+先生成一份问卷（公开数据能确认的已预填，让用户确认或改写）：
+
+```bash
+python3 scripts/build_intake.py --user <github-handle> --facts <facts.json>
+```
+
+把问卷交给用户，**一次问全**，逐条等答案；用户没回的问题标"待补充"，不要替他编。问题覆盖十组：身份与首屏、当前状态、代表项目、上游贡献、专注方向、技术栈、社区与日常、联系方式、版式与视觉、数据口径。每条都标了对应的 spec 字段路径，答完直接映射进 spec，不用二次转述。
+
+问卷里的预填值来自公开接口（仓库、star、已合并 PR 数、仓库描述、关注者），**只作参考，用户确认后才算数**。
+
+### 3. 选范式
 
 三选一：数据叙事型（有量化成果）、视觉设计型（有插画素材、愿意维护 SVG）、极简工程型（简历导向、不用动态卡）。判据、章节顺序与每节写法见 `references/style-patterns.md`。
 
 渲染层面对应三个 layout：`data-narrative`（默认）、`classic-form`（表单式直出，about + 社交 + 技术栈 + 动态卡）、`minimal`。
 
-### 3. 选组件
+### 4. 选组件
 
 默认只用 Tier A 静态组件（shields 徽章、simple-icons、skillicons、devicon、自绘 SVG、Markdown 表格）。Tier B 动态卡（readme-stats、streak、views counter、活动图）要先向用户说明失效风险，并同时准备表格或自托管 SVG 作为降级方案。Tier C（打字机、奖杯墙、随机图）不使用。组件清单见 `references/widgets.md`。
 
-### 4. 写 spec 并渲染
+### 5. 写 spec 并渲染
 
 **优先用渲染器出初稿**，而不是手写 Markdown：同样的 spec 永远渲染出同样的结果，可复现、可评审。
 
@@ -61,7 +73,7 @@ python3 scripts/render_profile_readme.py --spec <spec.json> --facts <facts.json>
 - `templates/README.minimal-engineering.md`：极简工程型（about + 技术栈 + 精选项目）。
 - `templates/profile-stats-workflow.yml`：自托管统计卡的 GitHub Actions。
 
-### 5. 自检
+### 6. 自检
 
 ```bash
 python3 scripts/check_profile_readme.py README.md --username <github-handle>
@@ -69,7 +81,7 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 
 脚本检查占位符残留、缺 `alt` 的图片、`<picture>` 缺少深浅双主题、表格列数不一致、`http://` 外链、自指仓库 owner 不一致、动态卡过多。**必须零错误**才能交付；有警告时先判断是否需要修，再向用户说明。
 
-### 6. 交付
+### 7. 交付
 
 给出：
 
@@ -79,6 +91,7 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 
 ## 硬规则
 
+- **生成前必须先问本人个人信息**：定位句、"做了什么"、专注方向、联系方式这些只能问，不能推断；没答的标"待补充"，不替他编。
 - 不编造 star、PR 数、贡献数、任职经历、获奖；取不到就删掉那一行或整节。
 - 动态卡不超过 2 处，徽章一行不超过 6 个，并排图片宽度统一 `49%`。
 - 每张表写清数据口径与日期；每个"做了什么"用动词开头并给出结果。
@@ -94,6 +107,7 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 - `assets/profile.example.json`：可直接改写的 spec 示例。
 - `templates/`：三套 README 骨架与 GitHub Actions 模板。
 - `scripts/fetch_profile_facts.py`：采集公开事实，输出 JSON。
+- `scripts/build_intake.py`：生成"生成前必问"的信息采集问卷（公开数据预填 + 需用户补充项）。
 - `scripts/render_profile_readme.py`：按 spec 渲染 README（确定性输出）。
 - `scripts/check_profile_readme.py`：README 静态自检。
 

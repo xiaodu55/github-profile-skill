@@ -29,6 +29,7 @@
 | `title` | 首屏标题，例如 `Hi, I'm xiaodu55 👋`；不填则用用户名生成 |
 | `subtitle` | 副标题，一行定位 |
 | `focus_zh` | 中文定位句，渲染成斜体说明 |
+| `focus_en` | 英文定位句（需要双语时填），紧跟中文定位句渲染 |
 | `currentWork` | 当前在做（配 💼） |
 | `currentLearn` | 在学什么（配 🌱） |
 | `collaborateOn` | 希望一起做什么（配 🤝） |

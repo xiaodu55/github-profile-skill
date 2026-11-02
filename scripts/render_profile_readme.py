@@ -375,6 +375,9 @@ def render_hero(spec: dict) -> list[str]:
     if profile.get("focus_zh"):
         lines.append(f"<p><i>{profile['focus_zh']}</i></p>")
         lines.append("")
+    if profile.get("focus_en"):
+        lines.append(f"<p><i>{profile['focus_en']}</i></p>")
+        lines.append("")
     socials = spec.get("social", {}) or {}
     links = spec.get("links", {}) or {}
     nav = []
