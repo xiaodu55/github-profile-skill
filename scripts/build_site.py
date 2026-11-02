@@ -1335,7 +1335,7 @@ def build_site_hud(spec: dict) -> dict[str, str]:
     live = home.get("live", []) or []
     for page in HUD_PAGES:
         body = page["render"](spec)
-        title = page["en"].title() if page["key"] == "overview" else f"{page['en'].title()} | {site.get('title', '')}"
+        title = site.get("title", "") if page["key"] == "overview" else f"{page['en'].title()} | {site.get('title', '')}"
         files[page["file"]] = hud_style.shell(
             page=page["file"],
             title=title,
