@@ -66,7 +66,7 @@
 
 | 字段 | 作用 |
 | --- | --- |
-| `site.brand` / `brand_tag` / `brand_sub` | 侧栏品牌区（名字 / 标签 / 副信息） |
+| `site.brand` / `brand_tag` / `brand_sub` | 侧栏品牌区（名字 / 标签 / 副信息）；品牌名同时出现在启动动画标题、页脚与浏览器标题 |
 | `site.hud_status` / `tz` / `status` | 顶栏状态（ONLINE）、时区、侧栏底部状态（如 OPEN TO WORK） |
 | `site.stats[]` | 侧栏统计行（`[标签, 值]`） |
 | `site.contact[]` | 侧栏联系方式（有 `href` 是链接，否则可复制） |

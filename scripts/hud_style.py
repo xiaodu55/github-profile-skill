@@ -291,13 +291,9 @@ html.no-boot .boot-overlay { display: none; }
 .blog-stat span { font-size: 10px; letter-spacing: 1px; color: var(--text-dim); }
 .view-chip { font-family: var(--font-mono); font-size: 10px; color: var(--accent-gold); border: 1px solid rgba(226, 183, 20, .35); padding: 1px 6px; }
 
-/* 首屏居中 */
-.hero-panel { text-align: center; }
-.hero-panel .kicker { justify-content: center; }
-.hero-panel .hero-manifesto { margin-left: auto; margin-right: auto; }
-.hero-panel .operator-file { display: inline-block; text-align: left; margin-top: 16px; }
-.hero-panel .telemetry { justify-content: center; }
-.hero-panel .action-row { justify-content: center; }
+/* 首屏：内容上下居中，文字保持左对齐 */
+.hero-panel { display: flex; flex-direction: column; justify-content: center; }
+.hero-panel .operator-file { margin-top: 16px; }
 
 .radar-coords { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-top: 8px; letter-spacing: .5px; }
 .radar-coords b { color: var(--accent-cyan); font-weight: 600; }

@@ -505,10 +505,12 @@ class HudFilledContentTests(unittest.TestCase):
         self.assertIn('id="soundIcon"', html)
         self.assertIn('id="soundStatusText"', html)
 
-    def test_hero_panel_is_centered(self):
+    def test_hero_panel_is_vertically_centered_only(self):
         html = self.files["index.html"]
         self.assertIn("hero-panel", html)
-        self.assertIn(".hero-panel { text-align: center; }", self.files["assets/site.css"])
+        css = self.files["assets/site.css"]
+        self.assertIn("justify-content: center;", css)
+        self.assertNotIn(".hero-panel { text-align: center; }", css)
 
     def test_boot_has_ttl_and_replay_affordance(self):
         js = self.files["assets/site.js"]
