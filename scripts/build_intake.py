@@ -113,7 +113,7 @@ def build_questionnaire(username: str, facts: dict) -> str:
     else:
         lines.append("- 公开数据里没有已合并 PR，跳过本节")
         lines.append("")
-    lines.append(_bullet("upstream_extra", "剩下的 PR 要不要合并成一句话？（spec：`upstream_extra`）"))
+    lines.append(_bullet("upstream_extra", "剩下的 PR 要不要合并成一句话？"))
     lines.append("")
 
     # 5 专注方向
