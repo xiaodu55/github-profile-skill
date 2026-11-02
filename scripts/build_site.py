@@ -1147,8 +1147,29 @@ def render_overview_hud(spec: dict) -> str:
         '<span>AZIMUTH: <b id="radarAzimuth">032°</b></span>'
         '<span>BEARING: 184.2</span></div>'
     )
+    signals = home.get("signals", []) or []
+    if signals:
+        parts.append('<div class="signal-list">')
+        for signal in signals:
+            parts.append(
+                f'<div class="signal-item"><b>{esc(signal.get("key", ""))}</b><span>{esc(signal.get("text", ""))}</span></div>'
+            )
+        parts.append("</div>")
     parts.append("</section>")
     parts.append("</div>")
+
+    milestones = home.get("milestones", []) or []
+    if milestones:
+        parts.append('<section class="panel">')
+        parts.append('<div class="card-hud-bar"><span>近期里程碑 / MILESTONES</span><span class="tag">2026</span></div>')
+        parts.append('<div class="milestone-list">')
+        for row in milestones:
+            parts.append(
+                f'<div class="milestone-item"><div class="milestone-when">{esc(row.get("when", ""))}</div>'
+                f'<div><div class="milestone-what">{esc(row.get("what", ""))}</div>'
+                f'<div class="milestone-why">{esc(row.get("why", ""))}</div></div></div>'
+            )
+        parts.append("</div></section>")
     return "\n".join(parts)
 
 
@@ -1214,6 +1235,12 @@ def render_blog_hud(spec: dict) -> str:
         f'<div class="card-hud-bar"><span>{esc(blog.get("title", "博客"))}</span>'
         f'<span class="tag">{esc(learning.get("note_short", "PUBLISHED"))}</span></div>'
     )
+    stats = learning.get("stats", []) or []
+    if stats:
+        cells = "".join(f'<div class="blog-stat"><b>{esc(value)}</b><span>{esc(label)}</span></div>' for label, value in stats)
+        parts.append(f'<div class="blog-stat-row">{cells}</div>')
+    if learning.get("platforms"):
+        parts.append(f'<p class="mission-desc">{esc(learning["platforms"])}</p>')
     parts.append('<div class="log-list">')
     for item in learning.get("items", []) or []:
         title = esc(item.get("title", ""))
@@ -1225,11 +1252,24 @@ def render_blog_hud(spec: dict) -> str:
             parts.append(f'<div class="log-date">{esc(item["date"])}</div>')
         if item.get("summary"):
             parts.append(f'<div class="log-desc">{esc(item["summary"])}</div>')
+        links = []
         if item.get("tags"):
-            tags = "".join(f'<span class="mission-tag">{esc(tag)}</span>' for tag in item["tags"])
-            parts.append(f'<div class="log-links">{tags}</div>')
+            links += [f'<span class="mission-tag">{esc(tag)}</span>' for tag in item["tags"]]
+        if item.get("likes") is not None:
+            links.append(f'<span class="like-chip">♥ {esc(item["likes"])}</span>')
+        if links:
+            parts.append(f'<div class="log-links">{"".join(links)}</div>')
         parts.append("</div>")
     parts.append("</div></section>")
+
+    cta = learning.get("cta", {}) or {}
+    if cta.get("text"):
+        parts.append('<section class="panel">')
+        parts.append('<div class="card-hud-bar"><span>订阅 / SUBSCRIBE</span><span class="tag">RSS</span></div>')
+        parts.append(f'<p class="mission-desc">{esc(cta["text"])}</p>')
+        if cta.get("url"):
+            parts.append(f'<div class="action-row" style="margin-top:12px;"><a class="btn-tactical" href="{esc(cta["url"])}">打开掘金主页 ↗</a></div>')
+        parts.append("</section>")
     return "\n".join(parts)
 
 

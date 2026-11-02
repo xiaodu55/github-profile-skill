@@ -259,6 +259,7 @@ body {
   transition: opacity .5s ease; font-family: var(--font-mono);
 }
 .boot-overlay.done { opacity: 0; pointer-events: none; }
+html.no-boot .boot-overlay { display: none; }
 .boot-box { width: min(520px, 84vw); }
 .boot-logo { font-size: 24px; font-weight: 700; letter-spacing: 3px; font-style: italic; margin-bottom: 16px; color: #fff; }
 .boot-log { font-size: 11px; color: var(--text-muted); height: 16px; margin-bottom: 10px; letter-spacing: .5px; }
@@ -270,8 +271,26 @@ body {
 #neuralCanvas { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; opacity: .45; }
 .shell { position: relative; z-index: 10; }
 .radar-card { display: flex; flex-direction: column; }
-.radar-wrapper { position: relative; aspect-ratio: 1 / 1; max-height: 320px; }
+.radar-wrapper { position: relative; aspect-ratio: 1 / 1; max-height: 380px; }
 #radarCanvas { width: 100%; height: 100%; display: block; }
+.signal-list { display: grid; gap: 8px; margin-top: 12px; }
+.signal-item {
+  display: flex; gap: 10px; align-items: baseline;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+  border-left: 2px solid var(--border-bright); padding-left: 10px;
+}
+.signal-item b { color: var(--accent-cyan); font-weight: 600; }
+.milestone-list { display: grid; gap: 10px; }
+.milestone-item { display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: baseline; }
+.milestone-when { font-family: var(--font-mono); font-size: 11px; color: var(--accent-gold); }
+.milestone-what { color: var(--text-primary); font-weight: 600; }
+.milestone-why { color: var(--text-muted); font-size: .9rem; }
+.blog-stat-row { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 14px; }
+.blog-stat { font-family: var(--font-mono); }
+.blog-stat b { display: block; font-size: 1.3rem; color: var(--accent-cyan); font-weight: 600; }
+.blog-stat span { font-size: 10px; letter-spacing: 1px; color: var(--text-dim); }
+.like-chip { font-family: var(--font-mono); font-size: 10px; color: var(--accent-gold); border: 1px solid rgba(226, 183, 20, .35); padding: 1px 6px; }
+
 .radar-coords { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-top: 8px; letter-spacing: .5px; }
 .radar-coords b { color: var(--accent-cyan); font-weight: 600; }
 
@@ -408,6 +427,7 @@ def shell(
   <meta name="description" content="{esc(description)}">
   <meta name="author" content="{esc(site.get("author", ""))}">
   <link rel="stylesheet" href="assets/site.css">
+  <script>try {{ if (sessionStorage.getItem('hud_booted') === '1') {{ document.documentElement.className += ' no-boot'; }} }} catch (e) {{}}</script>
 </head>
 <body>
 <div class="scanlines" aria-hidden="true"></div>
@@ -431,6 +451,7 @@ def shell(
       <div class="hud-chip"><span>TZ</span><strong>{esc(site.get("tz", "UTC+8"))}</strong></div>
       <div class="hud-chip"><span>UTC</span><strong id="hudClock">00:00:00</strong></div>
       <button class="lang-btn" type="button" id="langToggleBtn"><span class="lang-current" id="langCurrent">ZH</span> / <span id="langAlt">EN</span></button>
+      <button class="lang-btn" type="button" id="soundToggleBtn"><span id="soundIcon">🔊</span> <span id="soundStatusText">ON</span></button>
     </div>
   </div>
 </header>

@@ -462,6 +462,56 @@ class HudInteractionTests(unittest.TestCase):
         self.assertIn('data-bind="nav.overview.label"', html)
 
 
+HUD_FILLED = {
+    **HUD_INTERACTIONS,
+    "home": {
+        **HUD_INTERACTIONS["home"],
+        "signals": [{"key": "OSS", "text": "45 PR"}],
+        "milestones": [{"when": "2026.11", "what": "站点上线", "why": "口径公开"}],
+    },
+    "learning": {
+        **HUD_INTERACTIONS["learning"],
+        "stats": [["已发布", "6"]],
+        "platforms": "知乎 / 掘金 / 公众号",
+        "cta": {"text": "订阅", "url": "https://example.org"},
+        "items": [{"title": "文章", "url": "https://example.org/p", "date": "2026-11", "likes": 24, "tags": ["Agent"]}],
+    },
+}
+
+
+class HudFilledContentTests(unittest.TestCase):
+    def setUp(self):
+        self.files = build_site.build_site(HUD_FILLED)
+
+    def test_overview_renders_signals_and_milestones(self):
+        html = self.files["index.html"]
+        self.assertIn("signal-item", html)
+        self.assertIn("OSS", html)
+        self.assertIn("milestone-item", html)
+        self.assertIn("站点上线", html)
+
+    def test_blog_renders_stats_platforms_likes_and_cta(self):
+        html = self.files["blog.html"]
+        self.assertIn("blog-stat", html)
+        self.assertIn("知乎 / 掘金 / 公众号", html)
+        self.assertIn("like-chip", html)
+        self.assertIn("♥ 24", html)
+        self.assertIn("订阅 / SUBSCRIBE", html)
+        self.assertIn("打开掘金主页", html)
+
+    def test_sound_toggle_button_exists(self):
+        html = self.files["index.html"]
+        self.assertIn('id="soundToggleBtn"', html)
+        self.assertIn('id="soundIcon"', html)
+        self.assertIn('id="soundStatusText"', html)
+
+    def test_boot_runs_once_per_session(self):
+        js = self.files["assets/site.js"]
+        self.assertIn("sessionStorage", js)
+        self.assertIn("hud_booted", js)
+        self.assertIn("no-boot", js)
+
+
 class ScriptTests(unittest.TestCase):
     def test_js_handles_theme_toggle_and_copy(self):
         js = build_site.build_site(SPEC_DATA)["assets/site.js"]
