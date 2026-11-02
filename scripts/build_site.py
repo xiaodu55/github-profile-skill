@@ -28,6 +28,8 @@ import json
 import sys
 from pathlib import Path
 
+import neon_style
+
 # --------------------------------------------------------------------------- #
 # 主题预设
 # --------------------------------------------------------------------------- #
@@ -52,6 +54,16 @@ THEMES = {
         "link_hover": "#1d4ea8",
         "radius": "0.25rem",
         "table_style": "bordered",
+    },
+    # 霓虹 Bento：暗底 + 玻璃拟态 + 霓虹描边（参照参考稿 1.html）
+    "neon-bento": {
+        "label": "霓虹 Bento",
+        "primary": "#f1f5f9",
+        "primary_foreground": "#0b0f17",
+        "link": "#00f2fe",
+        "link_hover": "#7dd3fc",
+        "radius": "20px",
+        "table_style": "glass",
     },
     # 默认混合：shadcn 令牌体系 + runoob 的长文可读性
     "hybrid": {
@@ -768,6 +780,262 @@ def render_learning(spec: dict, nav: list[dict]) -> str:
     return "\n".join(parts)
 
 
+
+# --------------------------------------------------------------------------- #
+# 霓虹 Bento 版式
+# --------------------------------------------------------------------------- #
+
+
+def _neon_contact_text(item: dict) -> str:
+    """把联系方式条目拼成展示文本：图标 + 标签 + 值。"""
+    icon = str(item.get("icon", "")).strip()
+    label = str(item.get("label", "")).strip()
+    value = str(item.get("value", "")).strip()
+    parts = [part for part in (icon, label, value) if part]
+    return " ".join(parts)
+
+
+def _neon_contact_items(home: dict) -> list[dict]:
+    items = []
+    for item in home.get("contact", []) or []:
+        items.append({
+            "text": _neon_contact_text(item),
+            "value": str(item.get("value", "")),
+            "href": item.get("href", ""),
+            "copy": item.get("copy", False),
+        })
+    return items
+
+
+def render_home_neon(spec: dict) -> str:
+    home = spec.get("home", {}) or {}
+    site = spec.get("site", {}) or {}
+    hero = home.get("hero", {}) or {}
+    meta = home.get("meta", {}) or {}
+    focus = home.get("focus", {}) or {}
+    highlights = home.get("highlights", {}) or {}
+    contact = home.get("contact", {}) or {}
+
+    title = hero.get("title") or home.get("title") or site.get("title", "")
+    highlight = hero.get("highlight", "")
+    bio = hero.get("bio") or (home.get("paragraphs") or [""])[0]
+    tagline = hero.get("tagline") or home.get("lede") or ""
+
+    actions = hero.get("actions") or [
+        {"label": "探索 GitHub", "url": f"https://github.com/{spec.get('username', '')}", "primary": True},
+        {"label": "浏览实战项目", "url": "projects.html"},
+    ]
+
+    chips = meta.get("chips") or []
+    pills = focus.get("pills") or []
+    highlight_items = highlights.get("items") or []
+    if not highlight_items and home.get("stats"):
+        highlight_items = [{"icon": "📈", "title": label, "desc": str(value)} for label, value in home["stats"]]
+
+    raw_items = contact.get("items") or home.get("contact", []) or []
+    contact_items = [
+        {
+            "text": _neon_contact_text(item),
+            "value": str(item.get("value", "")),
+            "href": item.get("href", ""),
+            "copy": item.get("copy", False),
+        }
+        for item in raw_items
+    ]
+
+    parts = ['<section class="card card-hero">', "<div>"]
+    parts.append(
+        f'<div class="hero-tagline"><span class="status-dot"></span><span>{esc(tagline)}</span></div>'
+    )
+    parts.append(
+        f'<h1 class="hero-title">{esc(title)}'
+        + (f'<span class="hl">{esc(highlight)}</span>' if highlight else "")
+        + "</h1>"
+    )
+    parts.append(f'<p class="hero-bio">{esc(bio)}</p>')
+    parts.append("</div>")
+    parts.append('<div class="hero-actions">')
+    for action in actions:
+        cls = "btn btn-primary" if action.get("primary") else "btn btn-ghost"
+        parts.append(f'<a href="{esc(action.get("url", "#"))}" class="{cls}"><span>{esc(action.get("label", ""))}</span></a>')
+    parts.append("</div></section>")
+
+    parts.append('<aside class="card card-meta">')
+    parts.append(
+        f'<div class="avatar-wrapper"><div class="avatar">{esc(meta.get("initials") or site.get("initials", "GH"))}</div></div>'
+    )
+    parts.append(
+        f'<div><h2 class="meta-name">{esc(meta.get("name") or site.get("brand", ""))}</h2>'
+        f'<p class="meta-handle">{esc(meta.get("handle") or site.get("handle", ""))}</p></div>'
+    )
+    parts.append('<div class="meta-chips">')
+    for chip in chips:
+        parts.append(f'<span class="chip">{esc(chip)}</span>')
+    parts.append("</div></aside>")
+
+    parts.append('<section class="card card-focus">')
+    parts.append(f'<h2 class="card-title">{esc(focus.get("title", "核心工程方向"))}</h2>')
+    focus_text = focus.get("text") or home.get("focus", "")
+    focus_highlight = focus.get("highlight", "")
+    if focus_highlight and focus_highlight in focus_text:
+        parts.append(f'<p class="focus-text">{esc(focus_text.replace(focus_highlight, ""))}<span class="focus-highlight">{esc(focus_highlight)}</span></p>')
+    else:
+        parts.append(f'<p class="focus-text">{esc(focus_text)}</p>')
+    parts.append('<div class="badge-cloud">')
+    for pill in pills:
+        parts.append(f'<span class="tech-pill"># {esc(pill)}</span>')
+    parts.append("</div></section>")
+
+    parts.append('<section class="card card-highlights">')
+    parts.append(f'<h2 class="card-title">{esc(highlights.get("title", "数据与社区"))}</h2>')
+    for item in highlight_items:
+        parts.append('<div class="highlight-item">')
+        parts.append(f'<div class="highlight-icon">{esc(item.get("icon", "•"))}</div>')
+        parts.append(
+            f'<div class="highlight-desc"><strong>{esc(item.get("title", ""))}</strong><br>{esc(item.get("desc", ""))}</div>'
+        )
+        parts.append("</div>")
+    parts.append("</section>")
+
+    parts.append('<section class="card card-contact" id="contact">')
+    parts.append(
+        f'<div class="contact-cta"><h3>{esc(contact.get("title", "随时碰个头！"))}</h3>'
+        f'<p>{esc(contact.get("text", ""))}</p></div>'
+    )
+    parts.append('<div class="contact-links">')
+    for item in contact_items:
+        text = esc(item.get("text", ""))
+        value = esc(item.get("value", ""))
+        if item.get("copy"):
+            parts.append(
+                f'<button class="contact-item" type="button" onclick="copyText(\'{value}\', \'{text} 已复制\')">'
+                f"<span>{text}</span></button>"
+            )
+        elif item.get("href"):
+            parts.append(f'<a class="contact-item" href="{esc(item["href"])}"><span>{text}</span></a>')
+        else:
+            parts.append(f'<span class="contact-item"><span>{text}</span></span>')
+    parts.append("</div></section>")
+    return "\n".join(parts)
+
+
+def _neon_page_head(title: str, lede: str) -> str:
+    return (
+        '<section class="card card-span-12 page-head">'
+        f"<h1>{esc(title)}</h1>"
+        + (f"<p>{esc(lede)}</p>" if lede else "")
+        + "</section>"
+    )
+
+
+def render_open_source_neon(spec: dict) -> str:
+    section = spec.get("open_source", {}) or {}
+    parts = [_neon_page_head(section.get("title", "开源贡献"), section.get("lede", ""))]
+    entries = section.get("entries", []) or []
+    for index, entry in enumerate(entries, start=1):
+        repo = entry.get("repo", "")
+        url = entry.get("url") or f"https://github.com/{repo}"
+        parts.append('<section class="card card-span-12">')
+        parts.append(f'<div class="entry-index">{index:02d}</div>')
+        parts.append(
+            f'<div class="entry-title"><h3><a href="{esc(url)}">{esc(repo)}</a></h3>'
+            + (f'<span class="entry-role">{esc(entry["role"])}</span>' if entry.get("role") else "")
+            + "</div>"
+        )
+        if entry.get("summary"):
+            parts.append(f'<p class="entry-summary">{esc(entry["summary"])}</p>')
+        prs = entry.get("prs", []) or []
+        if prs:
+            parts.append('<div class="entry-label">代表 PR</div>')
+            parts.append('<ul class="entry-list">')
+            for pr in prs:
+                parts.append(
+                    f'<li><a href="{esc(pr.get("url", ""))}"><span class="pr-no">#{esc(pr.get("number", ""))}</span>'
+                    f'<span>{esc(pr.get("title", ""))} ↗</span></a></li>'
+                )
+            parts.append("</ul>")
+        if entry.get("all_link"):
+            parts.append(f'<a class="entry-all" href="{esc(entry["all_link"])}">全部记录 ↗</a>')
+        parts.append("</section>")
+
+    index_rows = section.get("repo_index", []) or []
+    if index_rows:
+        parts.append('<section class="card card-span-12">')
+        parts.append(f'<h2 class="card-title">{esc(section.get("index_title", "参与过的仓库"))}</h2>')
+        if section.get("index_intro"):
+            parts.append(f'<p class="entry-summary">{esc(section["index_intro"])}</p>')
+        parts.append('<ul class="plain-list">')
+        for row in index_rows:
+            parts.append(f'<li><a href="{esc(row.get("url", ""))}">{esc(row.get("repo", ""))} ↗</a></li>')
+        parts.append("</ul>")
+        parts.append("</section>")
+    if section.get("data_note"):
+        parts.append(f'<p class="data-note">{esc(section["data_note"])}</p>')
+    return "\n".join(parts)
+
+
+def render_projects_neon(spec: dict) -> str:
+    section = spec.get("projects", {}) or {}
+    parts = [_neon_page_head(section.get("title", "项目"), section.get("lede", ""))]
+    for index, item in enumerate(section.get("items", []) or [], start=1):
+        url = item.get("url", "")
+        parts.append('<section class="card card-span-6">')
+        parts.append(f'<div class="entry-index">{index:02d}</div>')
+        name = f'<a href="{esc(url)}">{esc(item.get("name", ""))}</a>' if url else esc(item.get("name", ""))
+        parts.append(f'<div class="entry-title"><h3>{name}</h3></div>')
+        tags = item.get("tags", []) or []
+        if tags:
+            parts.append('<div class="badge-cloud" style="margin-bottom:0.9rem;">')
+            for tag in tags:
+                parts.append(f'<span class="tech-pill"># {esc(tag)}</span>')
+            parts.append("</div>")
+        if item.get("summary"):
+            parts.append(f'<p class="entry-summary">{esc(item["summary"])}</p>')
+        for point in item.get("points", []) or []:
+            parts.append(f'<p class="entry-summary">· {esc(point)}</p>')
+        parts.append("</section>")
+    if section.get("note"):
+        parts.append(f'<p class="data-note">{esc(section["note"])}</p>')
+    return "\n".join(parts)
+
+
+def render_learning_neon(spec: dict) -> str:
+    section = spec.get("learning", {}) or {}
+    parts = [_neon_page_head(section.get("title", "学习笔记"), section.get("lede", ""))]
+    blog = section.get("blog") or {}
+    if blog.get("title") or blog.get("url"):
+        parts.append('<section class="card card-span-12">')
+        title = esc(blog.get("title") or "博客")
+        if blog.get("url"):
+            title = f'<a href="{esc(blog["url"])}">{title}</a>'
+        parts.append(f'<div class="entry-title"><h3>{title}</h3></div>')
+        if blog.get("summary"):
+            parts.append(f'<p class="entry-summary">{esc(blog["summary"])}</p>')
+        if blog.get("url"):
+            parts.append(f'<a class="entry-all" href="{esc(blog["url"])}">打开博客 ↗</a>')
+        parts.append("</section>")
+    for index, item in enumerate(section.get("items", []) or [], start=1):
+        url = item.get("url", "")
+        parts.append('<section class="card card-span-6">')
+        parts.append(f'<div class="entry-index">{index:02d}</div>')
+        title = f'<a href="{esc(url)}">{esc(item.get("title", ""))}</a>' if url else esc(item.get("title", ""))
+        parts.append(f'<div class="entry-title"><h3>{title}</h3></div>')
+        if item.get("date"):
+            parts.append(f'<div class="entry-label">{esc(item["date"])}</div>')
+        if item.get("summary"):
+            parts.append(f'<p class="entry-summary">{esc(item["summary"])}</p>')
+        parts.append("</section>")
+    if section.get("note"):
+        parts.append(f'<p class="data-note">{esc(section["note"])}</p>')
+    return "\n".join(parts)
+
+
+NEON_PAGES = {
+    "open_source": ("open-source.html", "开源贡献", render_open_source_neon),
+    "projects": ("projects.html", "项目", render_projects_neon),
+    "learning": ("learning.html", "学习笔记", render_learning_neon),
+}
+
 PAGES = [
     {"key": "open_source", "file": "open-source.html", "title": "开源贡献", "render": render_open_source},
     {"key": "projects", "file": "projects.html", "title": "项目", "render": render_projects},
@@ -788,6 +1056,8 @@ def build_nav(spec: dict) -> list[dict]:
 
 def build_site(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
     """生成站点文件。fetch_posts=True 时会按 learning.blog.rss 拉取最新文章。"""
+    if spec.get("theme", {}).get("preset", "hybrid") == "neon-bento":
+        return build_site_neon(spec, fetch_posts)
     site = spec.get("site", {})
     base = {
         "title": site.get("title", ""),
@@ -856,6 +1126,65 @@ def build_site(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
     )
     return files
 
+
+
+def build_site_neon(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
+    """霓虹 Bento 版式的站点生成。"""
+    site = spec.get("site", {}) or {}
+    learning = spec.get("learning") or {}
+    blog = learning.get("blog") or {}
+    if fetch_posts and blog.get("rss"):
+        posts = fetch_rss(blog["rss"], limit=blog.get("limit", 8))
+        if posts:
+            learning = dict(learning)
+            learning["items"] = [
+                {"title": post["title"], "url": post["url"], "date": post.get("date", ""), "tags": ["博客"]}
+                for post in posts
+            ] + list(learning.get("items", []) or [])
+            spec = {**spec, "learning": learning}
+
+    nav = build_nav(spec)
+    files: dict[str, str] = {}
+    title = site.get("title", "")
+    description = site.get("description", "")
+    footer = spec.get("footer", {}) or {}
+
+    files["index.html"] = neon_style.shell(
+        page="index.html",
+        title=title,
+        description=description,
+        nav=nav,
+        body=render_home_neon(spec),
+        footer=footer,
+        site=site,
+    )
+    for key, (filename, label, renderer) in NEON_PAGES.items():
+        section = spec.get(key)
+        if not section:
+            continue
+        page_site = {**site, "contact_href": "index.html#contact"}
+        files[filename] = neon_style.shell(
+            page=filename,
+            title=f"{label} | {title}",
+            description=section.get("description", description),
+            nav=nav,
+            body=renderer(spec),
+            footer=footer,
+            site=page_site,
+        )
+    files["assets/site.css"] = neon_style.CSS
+    files["assets/site.js"] = neon_style.JS
+    files[".nojekyll"] = ""
+    files["404.html"] = neon_style.shell(
+        page="404.html",
+        title=f"页面不存在 | {title}",
+        description=description,
+        nav=nav,
+        body='<section class="card card-span-12 page-head"><h1>404</h1><p>这个页面不存在，<a href="index.html">回到首页</a>。</p></section>',
+        footer=footer,
+        site=site,
+    )
+    return files
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="生成静态个人网站")

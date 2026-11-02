@@ -169,6 +169,58 @@ class HybridPresetTests(unittest.TestCase):
         self.assertIn("--radius: 0.5rem", css)
 
 
+NEON_SPEC = {
+    **SPEC_DATA,
+    "site": {"title": "Ada | Runtime", "brand": "Ada", "initials": "AD", "handle": "@ada"},
+    "theme": {"preset": "neon-bento"},
+    "home": {
+        "hero": {"tagline": "Ready to ship", "title": "消灭静默", "highlight": "失败。", "bio": "你好"},
+        "meta": {"name": "Ada", "handle": "@ada", "chips": ["🎓 学生"]},
+        "focus": {"title": "⚡ 方向", "text": "让链条不假死、零静默抛错", "highlight": "零静默抛错", "pills": ["Agent"]},
+        "highlights": {"title": "🏆 数据", "items": [{"icon": "⭐", "title": "45 PR", "desc": "上游"}]},
+        "contact": {"title": "随时碰个头！", "text": "戳我", "items": [{"icon": "💬", "label": "微信", "value": "123", "copy": True}]},
+    },
+}
+
+
+class NeonBentoTests(unittest.TestCase):
+    def setUp(self):
+        self.files = build_site.build_site(NEON_SPEC)
+
+    def test_builds_bento_pages(self):
+        for name in ("index.html", "open-source.html", "projects.html", "learning.html"):
+            self.assertIn(name, self.files)
+
+    def test_home_uses_bento_grid(self):
+        html = self.files["index.html"]
+        self.assertIn('class="bento-grid"', html)
+        self.assertIn("card card-hero", html)
+        self.assertIn("card card-meta", html)
+        self.assertIn("card card-focus", html)
+        self.assertIn("card card-highlights", html)
+        self.assertIn("card card-contact", html)
+
+    def test_css_matches_reference_design_tokens(self):
+        css = self.files["assets/site.css"]
+        for token in ("--bg: #0b0f17", "--accent-neon: #00f2fe", "--accent-lime: #a3e635", "--radius: 20px"):
+            self.assertIn(token, css)
+        self.assertIn("backdrop-filter: blur(12px)", css)
+        self.assertIn("grid-template-columns: repeat(12, 1fr)", css)
+
+    def test_contact_items_render_text_and_copy(self):
+        html = self.files["index.html"]
+        self.assertIn("💬 微信 123", html)
+        self.assertIn("copyText('123'", html)
+
+    def test_js_has_toast_copy(self):
+        js = self.files["assets/site.js"]
+        self.assertIn("copyText", js)
+        self.assertIn("toast", js)
+
+    def test_inner_page_contact_button_points_home(self):
+        self.assertIn('href="index.html#contact"', self.files["projects.html"])
+
+
 class ScriptTests(unittest.TestCase):
     def test_js_handles_theme_toggle_and_copy(self):
         js = build_site.build_site(SPEC_DATA)["assets/site.js"]
