@@ -220,6 +220,49 @@ ABOUT_ORDER = (
 )
 
 
+SKILL_LABELS = {
+    "python": "Python",
+    "typescript": "TypeScript",
+    "javascript": "JavaScript",
+    "cplusplus": "C++",
+    "csharp": "C#",
+    "go": "Go",
+    "golang": "Go",
+    "nodejs": "Node.js",
+    "vuejs": "Vue",
+    "vue": "Vue",
+    "nextjs": "Next.js",
+    "nuxtjs": "Nuxt.js",
+    "postgresql": "PostgreSQL",
+    "mongodb": "MongoDB",
+    "kubernetes": "Kubernetes",
+    "html5": "HTML",
+    "css3": "CSS",
+    "tailwind": "Tailwind CSS",
+    "fastapi": "FastAPI",
+    "django": "Django",
+    "flask": "Flask",
+    "spring": "Spring",
+    "nestjs": "NestJS",
+    "graphql": "GraphQL",
+    "pytorch": "PyTorch",
+    "tensorflow": "TensorFlow",
+    "langchain": "LangChain",
+    "huggingface": "Hugging Face",
+    "llamaindex": "LlamaIndex",
+    "dotnet": ".NET",
+    "bash": "Bash",
+    "git": "Git",
+}
+
+
+def skill_label(skill: str) -> str:
+    key = skill.strip()
+    if key in SKILL_LABELS:
+        return SKILL_LABELS[key]
+    return key.replace("_", " ").replace("-", " ").title()
+
+
 def skill_icon_url(skill: str) -> str:
     """技术栈图标：skillicons.dev → devicon → simple-icons。"""
     key = skill.strip()
@@ -470,10 +513,10 @@ def render_techs(spec: dict) -> list[str]:
         return []
     icons = []
     for skill in skills:
-        label = skill.replace("_", " ").replace("-", " ").title()
+        label = skill_label(skill)
         icons.append(f'<img src="{skill_icon_url(skill)}" alt="{label}" width="40" height="40">')
     return [
-        "## 🧰 Tech Stack <sub>技术栈</sub>",
+        "## 🛠️ Tech Stack <sub>技术栈</sub>",
         "",
         " ".join(icons),
         "",
@@ -586,6 +629,9 @@ def render(spec: dict, facts: dict | None = None) -> str:
         raise ValueError(f"未知 layout：{layout}，可选 {', '.join(LAYOUTS)}")
     order = merged.get("sections") or LAYOUTS[layout]
     lines: list[str] = []
+    if merged.get("note"):
+        lines.append(f"<!-- {merged['note']} -->")
+        lines.append("")
     for name in order:
         renderer = SECTION_RENDERERS.get(name)
         if renderer is None:

@@ -13,11 +13,14 @@
 | `username` | string | GitHub 用户名，决定默认链接与仓库地址；facts 里能取到时会自动补 |
 | `layout` | string | `data-narrative`（默认）/ `classic-form` / `minimal` |
 | `sections` | string[] | 可选，显式指定区块顺序，覆盖 layout 的默认顺序 |
+| `note` | string | 可选，渲染成 README 最上方的 HTML 注释（写清"示例数据"或数据来源） |
 | `stats` | [label, value][] | 可选，覆盖数据速览表；不填则从 facts 自动生成 |
 | `stats_scope` | string | 数据口径说明，写在速览表下方 |
 | `data_date` | string | 数据截止日期，拼在口径后面 |
 | `upstream_extra` | string | 代表贡献表下方的一句补充（例如"另有 5 个 PR…"） |
 | `closing` | string | 结尾一句话 |
+
+区块名（`sections` 可选值）：`hero`、`about`、`stats`、`upstream`、`focus`、`projects`、`techs`、`socials`、`community`、`contact`、`widgets`。
 
 ## profile
 

@@ -38,6 +38,11 @@ class IconTests(unittest.TestCase):
     def test_devicon_fallback_for_missing_skillicons(self):
         self.assertIn("devicons", render_profile_readme.skill_icon_url("oracle"))
 
+    def test_skill_label_uses_proper_naming(self):
+        self.assertEqual(render_profile_readme.skill_label("typescript"), "TypeScript")
+        self.assertEqual(render_profile_readme.skill_label("golang"), "Go")
+        self.assertEqual(render_profile_readme.skill_label("some_thing"), "Some Thing")
+
     def test_social_icon_uses_simple_icons(self):
         self.assertEqual(
             render_profile_readme.social_icon_url("linkedin"),
@@ -134,6 +139,11 @@ class RenderTests(unittest.TestCase):
             render_profile_readme.render(
                 {"username": "ada", "sections": ["hero", "nope"]}, FACTS
             )
+
+    def test_note_becomes_leading_comment(self):
+        spec = {"username": "ada", "note": "虚构示例", "layout": "minimal"}
+        output = render_profile_readme.render(spec, FACTS)
+        self.assertTrue(output.startswith("<!-- 虚构示例 -->"))
 
     def test_output_has_no_triple_blank_lines(self):
         spec = {"username": "ada", "layout": "minimal", "profile": {"currentWork": "x"}}

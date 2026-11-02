@@ -54,4 +54,4 @@ jobs:
           python scripts/render_profile_readme.py --spec assets/profile.example.json --out build/README.md
 
       - name: The rendered output must pass the self-check
-        run: python scripts/check_profile_readme.py build/README.md --username xiaodu55
+        run: python scripts/check_profile_readme.py build/README.md --username ada
