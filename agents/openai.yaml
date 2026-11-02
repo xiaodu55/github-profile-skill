@@ -1,0 +1,4 @@
+interface:
+  display_name: "github-profile"
+  short_description: "抓取真实数据，生成高级感的 GitHub 个人主页 README"
+  default_prompt: "用 $github-profile 美化我的 GitHub 个人主页：先抓取我的公开仓库与贡献数据，再选一种版式范式生成 <username>/<username> 的 README，包含成果表格、双主题视觉与联系方式，最后跑自检脚本并列出需要我自己完成的步骤。"
