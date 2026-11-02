@@ -38,3 +38,20 @@ jobs:
 
       - name: Check the shipped example still passes the self-check
         run: python scripts/check_profile_readme.py examples/README.data-narrative.example.md --username ada
+
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Render the shipped example spec
+        run: |
+          mkdir -p build
+          python scripts/render_profile_readme.py --spec assets/profile.example.json --out build/README.md
+
+      - name: The rendered output must pass the self-check
+        run: python scripts/check_profile_readme.py build/README.md --username xiaodu55

@@ -28,6 +28,14 @@ python3 -m unittest discover -s tests -t . -v
 python3 scripts/check_profile_readme.py examples/README.data-narrative.example.md --username ada
 ```
 
+改动渲染器后，确认示例 spec 仍能渲染出能通过自检的 README：
+
+```bash
+mkdir -p build
+python3 scripts/render_profile_readme.py --spec assets/profile.example.json --out build/README.md
+python3 scripts/check_profile_readme.py build/README.md --username xiaodu55
+```
+
 ## 提交规范
 
 遵循 [Conventional Commits](https://www.conventionalcommits.com/zh-hans/v1.0.0/)：

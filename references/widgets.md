@@ -7,11 +7,22 @@
 | 组件 | 用途 | URL 模板 | 备注 |
 | --- | --- | --- | --- |
 | shields.io 徽章 | 邮箱、语言、社交、赞助 | `https://img.shields.io/badge/<LABEL>-<MESSAGE>-<COLOR>?style=flat-square&logo=<LOGO>&logoColor=white` | 文字含空格用 `_` 或 `%20`；统一 `flat-square` |
-| simple-icons | 品牌图标 | `https://cdn.simpleicons.org/<slug>/<hex>` | 只收录品牌，`<hex>` 可留空取默认色 |
-| devicon | 语言/框架图标 | `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/<slug>/<slug>-original.svg` | 统一 `width="40" height="40"`，配 `alt` |
+| skillicons.dev | 技术栈图标（首选） | `https://skillicons.dev/icons?i=<id>` | 自带深浅色适配；`python→py`、`typescript→ts`、`postgresql→postgres` 等别名见脚本 `SKILLICONS_IDS` |
+| simple-icons | 社交与品牌图标 | `https://cdn.simpleicons.org/<slug>` | 社交图标统一走这里，不依赖任何第三方仓库的图片资源 |
+| devicon | 技术栈图标兜底 | `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/<slug>/<slug>-original.svg` | 用于 skillicons 没有的项（oracle、numpy、pandas、jupyter 等） |
 | GitHub 头像 | Hero 区头像 | `https://github.com/<user>.png?size=200` | 也可直接用 `assets/` 下的本地图 |
 | 自绘 SVG | Hero、分隔线、卡片 | 存 `assets/`，用 raw 链接引用 | 见 style-patterns.md 的 SVG 规格 |
 | 表格 | 数据速览、贡献表、方向表 | 原生 Markdown | 移动端不横向溢出，列数 ≤ 4 |
+
+### 图标解析顺序
+
+`scripts/render_profile_readme.py` 统一处理，不手写图标 URL：
+
+1. 技术栈图标 → skillicons.dev（命中别名表则先转 id）→ devicon 兜底表 → 名称直接当 skillicons 标识符；
+2. 社交图标 → `cdn.simpleicons.org/<slug>`，图标尺寸 `height="30" width="30"`；
+3. 社交链接 → 按平台查表拼 URL，未内置的平台退化为 `https://<platform>/<username>`。
+
+这套三级回退的做法来自 `rahuldkjain/github-profile-readme-generator`：它用 skillicons.dev 为主源，对 skillicons 缺失的品牌再退到 simple-icons 或 devicon。本仓库把映射表收进了脚本，避免每次生成都要人肉查表。
 
 Markdown 徽章写法：
 

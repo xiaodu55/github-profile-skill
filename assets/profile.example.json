@@ -1,0 +1,78 @@
+{
+  "username": "xiaodu55",
+  "layout": "data-narrative",
+  "profile": {
+    "title": "Hi, I'm xiaodu55 👋",
+    "subtitle": "AI 应用 / Agent 方向 · 后端开发实习生",
+    "focus_zh": "做多租户 AI Agent 平台与 RAG 全链路，同时给上游项目提交可合并的修复"
+  },
+  "links": {},
+  "social": {
+    "github": "xiaodu55"
+  },
+  "skills": [],
+  "upstream": [
+    {
+      "repo": "bytedance/deer-flow",
+      "merged": 29,
+      "what": "沙箱与工具执行链路的正确性修复：预热状态按事件判定、Windows 主机边界用例、并发与失败语义收敛"
+    },
+    {
+      "repo": "helsome/folio",
+      "merged": 6,
+      "what": "自动化与解析层收紧：必填字段 fail-closed、无实质变化不再误判、状态展示补齐测试"
+    },
+    {
+      "repo": "alibaba/open-code-review",
+      "merged": 2,
+      "what": "评审视图与 diff 处理：会话对比页改版、未跟踪二进制文件正确识别"
+    },
+    {
+      "repo": "axonel/sentinel",
+      "merged": 2,
+      "what": "接入 Claude Code CLI 后端，收紧密钥脱敏对 JSON 对象键的处理"
+    }
+  ],
+  "upstream_extra": "另有 5 个已合并 PR 分布在 dify、hermes-agent、freeCodeCamp、powercontext、heym。",
+  "focus": [
+    {
+      "direction": "多租户 Agent 平台",
+      "detail": "Java + Python 双语言分层、RAG 全链路、工具审批 exactly-once、插件沙箱隔离"
+    },
+    {
+      "direction": "评测与交付门禁",
+      "detail": "用 CI 用例与可复现验证兜住改动，而不是只让单测看起来绿"
+    },
+    {
+      "direction": "上游开源贡献",
+      "detail": "优先修可复现的正确性问题：状态判定、失败语义、跨平台边界"
+    }
+  ],
+  "projects": [
+    {
+      "area": "Agent 平台",
+      "name": "HFusionHub",
+      "url": "https://github.com/xiaodu55/HFusionHub",
+      "notes": "多租户 AI Agent 平台：RAG 全链路 + 220 用例 CI 评测门禁 + 插件沙箱"
+    },
+    {
+      "area": "个人主页",
+      "name": "xiaodu55",
+      "url": "https://github.com/xiaodu55/xiaodu55",
+      "notes": "这个主页仓库"
+    }
+  ],
+  "community": [
+    "45 个已合并上游 PR：deer-flow(29)、folio(6)、open-code-review(2)、sentinel(2)、dify(1)、hermes-agent(1)、freeCodeCamp(1)、powercontext(1)、heym(1)",
+    "修 bug 的偏好：先写能复现的用例，再改实现，最后补上跨主机（Windows / Linux）都能跑的验证",
+    "代码之外：读 Agent 框架源码、折腾评测、把踩过的坑写成文档"
+  ],
+  "closing": "欢迎交流 Agent 平台、评测门禁与上游贡献。",
+  "stats_scope": "统计口径：GitHub 公开接口抓取，作者维度已合并 PR 总数 / 有合并记录的上游仓库数 / 非 fork 公开仓库数 / 关注者数",
+  "data_date": "2026-11-02",
+  "widgets": {
+    "github_stats": false,
+    "top_languages": false,
+    "streak": false
+  }
+}

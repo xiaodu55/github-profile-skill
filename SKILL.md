@@ -33,13 +33,26 @@ python3 scripts/fetch_profile_facts.py --user <github-handle>
 
 三选一：数据叙事型（有量化成果）、视觉设计型（有插画素材、愿意维护 SVG）、极简工程型（简历导向、不用动态卡）。判据、章节顺序与每节写法见 `references/style-patterns.md`。
 
+渲染层面对应三个 layout：`data-narrative`（默认）、`classic-form`（表单式直出，about + 社交 + 技术栈 + 动态卡）、`minimal`。
+
 ### 3. 选组件
 
-默认只用 Tier A 静态组件（shields 徽章、simple-icons、devicon、自绘 SVG、Markdown 表格）。Tier B 动态卡（readme-stats、streak、views counter、活动图）要先向用户说明失效风险，并同时准备表格或自托管 SVG 作为降级方案。Tier C（打字机、奖杯墙、随机图）不使用。组件清单见 `references/widgets.md`。
+默认只用 Tier A 静态组件（shields 徽章、simple-icons、skillicons、devicon、自绘 SVG、Markdown 表格）。Tier B 动态卡（readme-stats、streak、views counter、活动图）要先向用户说明失效风险，并同时准备表格或自托管 SVG 作为降级方案。Tier C（打字机、奖杯墙、随机图）不使用。组件清单见 `references/widgets.md`。
 
-### 4. 组装
+### 4. 写 spec 并渲染
 
-从 `templates/` 复制对应范式的骨架到 `<user>/<user>/README.md`，把 `{{占位符}}` 全部替换为真实内容，**删除模板顶部的说明注释块**，再删除所有未使用的段落——不留空章节，不留"待补充"。
+**优先用渲染器出初稿**，而不是手写 Markdown：同样的 spec 永远渲染出同样的结果，可复现、可评审。
+
+1. 复制 `assets/profile.example.json` 改成用户的 spec，字段含义见 `references/spec-fields.md`；
+2. 渲染：
+
+```bash
+python3 scripts/render_profile_readme.py --spec <spec.json> --facts <facts.json> --out README.md
+```
+
+3. 渲染后**人工润色**：每个"做了什么"换成用户口述的真实内容，删掉没用的区块。
+
+只有需要视觉设计型（自绘 SVG、深浅双主题 hero）时才改用 `templates/` 里的手写骨架：把 `{{占位符}}` 全部替换为真实内容，**删除模板顶部的说明注释块**，再删除所有未使用的段落——不留空章节，不留"待补充"。
 
 模板：
 
@@ -74,11 +87,14 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 
 ## 资源
 
+- `references/spec-fields.md`：spec 字段契约、layout、区块、图标解析与 facts 合并规则。
 - `references/style-patterns.md`：三种范式的骨架、视觉硬约束、文案公式、双语写法、反面清单。
 - `references/widgets.md`：组件目录与可靠性分级、降级方案、自托管卡片工作流。
 - `references/intake.md`：必填信息、公开接口取证方法、只能口述的部分、降级策略、交付前确认项。
+- `assets/profile.example.json`：可直接改写的 spec 示例。
 - `templates/`：三套 README 骨架与 GitHub Actions 模板。
 - `scripts/fetch_profile_facts.py`：采集公开事实，输出 JSON。
+- `scripts/render_profile_readme.py`：按 spec 渲染 README（确定性输出）。
 - `scripts/check_profile_readme.py`：README 静态自检。
 
 ## 衔接
