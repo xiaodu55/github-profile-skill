@@ -334,6 +334,75 @@ class StackMatrixTests(unittest.TestCase):
         self.assertIn("技术栈矩阵", html)
 
 
+HUD_SPEC = {
+    "username": "ada",
+    "theme": {"preset": "hud"},
+    "site": {
+        "title": "Ada | Agent Ops",
+        "brand": "杜凯峰",
+        "brand_tag": "AGENT OPS",
+        "status": "OPEN TO WORK",
+        "tz": "UTC+8",
+        "stats": [["MERGED PRs", "45"]],
+        "contact": [{"label": "Email", "text": "ada@example.org", "value": "ada@example.org"}],
+    },
+    "home": {
+        "hero": {"tagline": "AGENT ENGINEER", "title": "用确定性工程", "highlight": "驯化不确定性。", "bio": "bio"},
+        "live": [{"key": "mergedPRs", "label": "个已合并上游 PR", "value": "45"}],
+        "highlights": {"title": "数据", "items": [{"icon": "⭐", "title": "45 PR", "desc": "上游"}]},
+    },
+    "projects": {
+        "items": [{"name": "CoreCoder", "code": "TS", "summary": "s", "metrics": ["4013 TESTS"], "tags": ["t"]}],
+        "stack": {"groups": [{"label": "AGENT", "items": ["LangGraph"]}]},
+        "chrono": [{"period": "2026.09–", "title": "deer-flow", "detail": "45 PR"}],
+    },
+    "learning": {"items": [{"title": "文章", "url": "https://example.org/p", "date": "2026-11"}]},
+    "terminal": {"lines": [{"text": "> whoami", "tone": "ok"}]},
+}
+
+
+class HudPresetTests(unittest.TestCase):
+    def setUp(self):
+        self.files = build_site.build_site(HUD_SPEC)
+
+    def test_generates_five_sections_plus_assets(self):
+        for name in ("index.html", "missions.html", "arsenal.html", "blog.html", "terminal.html"):
+            self.assertIn(name, self.files)
+        self.assertIn("assets/site.css", self.files)
+        self.assertIn("assets/content.js", self.files)
+
+    def test_uses_reference_design_tokens(self):
+        css = self.files["assets/site.css"]
+        for token in ("--bg-void: #05070a", "--accent-cyan: #00f0ff", "--accent-red: #ff2a4a", "--cut-sm:", "--font-mono:"):
+            self.assertIn(token, css)
+
+    def test_layout_has_hud_bar_sidebar_and_viewport(self):
+        html = self.files["index.html"]
+        self.assertIn('class="hud"', html)
+        self.assertIn('class="sidebar"', html)
+        self.assertIn('class="viewport"', html)
+        self.assertIn("scanlines", html)
+
+    def test_sidebar_nav_is_numbered(self):
+        html = self.files["index.html"]
+        for idx in ("01", "02", "03", "04", "05"):
+            self.assertIn(f'class="nav-idx">{idx}<', html)
+
+    def test_live_metrics_are_marked(self):
+        html = self.files["index.html"]
+        self.assertIn('data-live="mergedPRs"', html)
+
+    def test_sections_render_content(self):
+        self.assertIn("CoreCoder", self.files["missions.html"])
+        self.assertIn("LangGraph", self.files["arsenal.html"])
+        self.assertIn("deer-flow", self.files["arsenal.html"])
+        self.assertIn("文章", self.files["blog.html"])
+        self.assertIn("whoami", self.files["terminal.html"])
+
+    def test_terminal_lines_carry_tone(self):
+        self.assertIn('class="ok"', self.files["terminal.html"])
+
+
 class ScriptTests(unittest.TestCase):
     def test_js_handles_theme_toggle_and_copy(self):
         js = build_site.build_site(SPEC_DATA)["assets/site.js"]

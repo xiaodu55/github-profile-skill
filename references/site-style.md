@@ -53,12 +53,30 @@
 
 | 预设 | 可见差异 | 适合 |
 | --- | --- | --- |
+| `hud` | **战术终端 HUD**：底色 `#05070a`、切角面板（clip-path）、钛灰描边 + 霓虹青/红/金三色点缀、等宽字体做数据与标签、顶部 HUD 条（状态灯 + 实时数据 + 时钟）、左侧编号导航栏（01 概览 / 02 项目 / 03 武器库 / 04 个人博客 / 05 终端）+ 状态与联系方式 | 想要强终端感、工程感、编号分区的作品集 |
+| --- | --- | --- |
 | `neon-bento` | **暗底霓虹 Bento**：底色 `#0b0f17` + 双径向光晕、玻璃拟态卡片（半透明 + 1px 描边 + 20px 圆角 + 背景模糊）、霓虹青 `#00f2fe` 强调、胶囊顶栏、12 栏 Bento 网格（Hero 8 栏 + 头像卡 4 栏 + 方向卡 7 栏 + 数据卡 5 栏 + 联系卡 12 栏）、渐变标题、状态呼吸灯、复制后弹 Toast | 想要强烈个人标识、视觉冲击力强 |
 | `hybrid`（默认推荐） | **两者混合**：shadcn 的令牌体系与 0.5rem 卡片圆角 + 轻投影，配 runoob 的蓝色链接（带下划线与偏移）、`01/02` 序号、`h2` 分隔线 | 大多数人：干净、现代、信息密度适中 |
 | `shadcn-neutral` | 全中性无彩度、链接黑色带下划线、卡片圆角 0.75rem 并带极轻投影、`h2` 无分隔线、当前导航项反白（主色底） | 喜欢极简克制的技术风 |
 | `runoob-classic` | 15px 字号、顶栏不吸顶、卡片直角、条目无序号、`h1` 下有分隔线、链接全部带下划线、标签方角 | 偏教程/文档气质、信息量大 |
 
-前三个预设共用同一套"文档式"页面结构，只改 CSS 变量与 `<body class="preset-xxx">` 下的排版差异；`neon-bento` 换的是**页面结构本身**（Bento 网格卡片），实现放在 `scripts/neon_style.py`。
+`hybrid` / `shadcn-neutral` / `runoob-classic` 共用同一套"文档式"页面结构，只改 CSS 变量与 `<body class="preset-xxx">` 下的排版差异；`neon-bento` 换的是**页面结构本身**（Bento 网格卡片），实现放在 `scripts/neon_style.py`。
+
+### HUD 版式的 spec 字段
+
+| 字段 | 作用 |
+| --- | --- |
+| `site.brand` / `brand_tag` / `brand_sub` | 侧栏品牌区（名字 / 标签 / 副信息） |
+| `site.hud_status` / `tz` / `status` | 顶栏状态（ONLINE）、时区、侧栏底部状态（如 OPEN TO WORK） |
+| `site.stats[]` | 侧栏统计行（`[标签, 值]`） |
+| `site.contact[]` | 侧栏联系方式（有 `href` 是链接，否则可复制） |
+| `home.hero.paragraphs[]` | 概览正文（多段） |
+| `home.live[]` | 概览指标条 + 顶栏实时数据（同一个 key 两处都显示） |
+| `projects.items[].code` / `.metrics[]` | 项目卡的编号标签与指标胶囊 |
+| `projects.stack.groups[]` | 武器库技术栈表（分组 → 条目） |
+| `projects.chrono[]` | 经历线（`period` / `title` / `detail`） |
+| `learning.items[]` | 个人博客条目（标题 / 链接 / 日期 / 标签 / 摘要） |
+| `terminal.lines[]` | 终端面板输出（`text` / `tone`：ok / warn / err） |
 
 ### 霓虹 Bento 的 spec 字段
 

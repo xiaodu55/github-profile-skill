@@ -29,6 +29,7 @@ import sys
 from pathlib import Path
 
 import neon_style
+import hud_style
 
 # --------------------------------------------------------------------------- #
 # 主题预设
@@ -54,6 +55,16 @@ THEMES = {
         "link_hover": "#1d4ea8",
         "radius": "0.25rem",
         "table_style": "bordered",
+    },
+    # HUD：暗底切角面板 + 顶栏 HUD + 侧栏导航（参照 AGENT OPS 参考稿）
+    "hud": {
+        "label": "HUD 战术终端",
+        "primary": "#00f0ff",
+        "primary_foreground": "#04121a",
+        "link": "#00f0ff",
+        "link_hover": "#7ee9f5",
+        "radius": "0px",
+        "table_style": "titanium",
     },
     # 霓虹 Bento：暗底 + 玻璃拟态 + 霓虹描边（参照参考稿 1.html）
     "neon-bento": {
@@ -1055,6 +1066,224 @@ def render_learning_neon(spec: dict) -> str:
     return "\n".join(parts)
 
 
+
+# --------------------------------------------------------------------------- #
+# HUD 版式
+# --------------------------------------------------------------------------- #
+
+
+def _hud_section_head(idx: str, label: str, en: str, sub: str = "") -> str:
+    head = f'<div class="section-title"><span class="idx">{esc(idx)}</span><span>{esc(label)}</span><span class="en">{esc(en)}</span></div>'
+    if sub:
+        head += f'<div class="section-sub">{esc(sub)}</div>'
+    return head
+
+
+def render_overview_hud(spec: dict) -> str:
+    home = spec.get("home", {}) or {}
+    hero = home.get("hero", {}) or {}
+    site = spec.get("site", {}) or {}
+    parts = [_hud_section_head("01", "概览", "OVERVIEW", home.get("lede", ""))]
+    parts.append('<div class="grid-2">')
+    parts.append('<section class="panel">')
+    parts.append(f'<div class="kicker">{esc(hero.get("tagline", ""))}</div>')
+    headline = esc(hero.get("title", ""))
+    if hero.get("highlight"):
+        headline += f'<br><span class="hl">{esc(hero["highlight"])}</span>'
+    parts.append(f'<h1 class="hero-headline">{headline}</h1>')
+    for paragraph in hero.get("paragraphs", []) or ([hero["bio"]] if hero.get("bio") else []):
+        parts.append(f'<p class="hero-manifesto">{esc(paragraph)}</p>')
+    live = home.get("live", []) or []
+    if live:
+        cells = "".join(
+            f'<div class="tel-item"><div class="label">{esc(item.get("label", ""))}</div>'
+            f'<div class="value"><span data-live="{esc(item.get("key", ""))}">{esc(item.get("value", "—"))}</span></div></div>'
+            for item in live
+        )
+        parts.append(f'<div class="telemetry">{cells}</div>')
+    actions = hero.get("actions", []) or []
+    if actions:
+        parts.append('<div class="action-row">')
+        for action in actions:
+            cls = "btn-tactical" if action.get("primary") else "btn-ghost"
+            parts.append(f'<a class="{cls}" href="{esc(action.get("url", "#"))}">{esc(action.get("label", ""))}</a>')
+        parts.append("</div>")
+    systems = (spec.get("projects", {}) or {}).get("items", []) or []
+    if systems:
+        parts.append('<div class="card-hud-bar" style="margin-top:18px;"><span>系统清单 / SYSTEMS</span><span class="tag">3</span></div>')
+        for index, item in enumerate(systems, start=1):
+            parts.append(
+                f'<div class="tl-row" style="grid-template-columns:96px 1fr;">'
+                f'<div class="tl-period">{esc(item.get("code") or f"0{index}")}</div>'
+                f'<div><div class="tl-title">{esc(item.get("name", ""))}</div>'
+                f'<div class="tl-body">{esc(item.get("summary", ""))[:96]}</div></div></div>'
+            )
+    parts.append("</section>")
+
+    highlights = home.get("highlights", {}) or {}
+    parts.append('<section class="panel">')
+    parts.append(
+        f'<div class="card-hud-bar"><span>{esc(highlights.get("title", "数据与成果"))}</span>'
+        f'<span class="tag">LIVE</span></div>'
+    )
+    for item in highlights.get("items", []) or []:
+        parts.append(
+            f'<div class="mission-card" style="margin-bottom:10px;">'
+            f'<div class="mission-head"><span class="mission-name">{esc(item.get("icon", ""))} {esc(item.get("title", ""))}</span></div>'
+            f'<div class="mission-desc">{esc(item.get("desc", ""))}</div></div>'
+        )
+    parts.append("</section>")
+    parts.append("</div>")
+    return "\n".join(parts)
+
+
+def render_missions_hud(spec: dict) -> str:
+    projects = spec.get("projects", {}) or {}
+    parts = [_hud_section_head("02", "项目", "MISSIONS", projects.get("lede", ""))]
+    parts.append('<div class="mission-grid">')
+    for index, item in enumerate(projects.get("items", []) or [], start=1):
+        parts.append('<article class="mission-card">')
+        parts.append(
+            f'<div class="mission-head"><span class="mission-name">{esc(item.get("name", ""))}</span>'
+            f'<span class="mission-code">{esc(item.get("code") or f"MISSION-0{index}")}</span></div>'
+        )
+        tags = "".join(f'<span class="mission-tag">{esc(tag)}</span>' for tag in item.get("tags", []) or [])
+        if tags:
+            parts.append(f'<div class="mission-tags">{tags}</div>')
+        if item.get("summary"):
+            parts.append(f'<div class="mission-desc">{esc(item["summary"])}</div>')
+        metrics = "".join(f'<span class="metric-chip">{esc(m)}</span>' for m in item.get("metrics", []) or [])
+        if metrics:
+            parts.append(f'<div class="mission-metrics">{metrics}</div>')
+        for point in item.get("points", []) or []:
+            parts.append(f'<div class="mission-desc">· {esc(point)}</div>')
+        parts.append("</article>")
+    parts.append("</div>")
+    return "\n".join(parts)
+
+
+def render_arsenal_hud(spec: dict) -> str:
+    projects = spec.get("projects", {}) or {}
+    stack = projects.get("stack", {}) or {}
+    parts = [_hud_section_head("03", "武器库", "ARSENAL", projects.get("stack_lede", "技术栈与经历线"))]
+    parts.append('<section class="panel">')
+    parts.append(f'<div class="card-hud-bar"><span>{esc(stack.get("title", "技术栈矩阵"))}</span><span class="tag">MATRIX</span></div>')
+    parts.append('<table class="stack-table"><tbody>')
+    for group in stack.get("groups", []) or []:
+        parts.append(
+            f'<tr><td>{esc(group.get("label", ""))}</td><td>{esc(" · ".join(group.get("items", []) or []))}</td></tr>'
+        )
+    parts.append("</tbody></table></section>")
+
+    chrono = projects.get("chrono", []) or []
+    if chrono:
+        parts.append('<section class="panel">')
+        parts.append('<div class="card-hud-bar"><span>服务记录 / SERVICE RECORD</span><span class="tag">CHRONO</span></div>')
+        parts.append('<div class="timeline">')
+        for row in chrono:
+            parts.append(
+                f'<div class="tl-row"><div class="tl-period">{esc(row.get("period", ""))}</div>'
+                f'<div><div class="tl-title">{esc(row.get("title", ""))}</div>'
+                f'<div class="tl-body">{esc(row.get("detail", ""))}</div></div></div>'
+            )
+        parts.append("</div></section>")
+    return "\n".join(parts)
+
+
+def render_blog_hud(spec: dict) -> str:
+    learning = spec.get("learning", {}) or {}
+    blog = learning.get("blog", {}) or {}
+    parts = [_hud_section_head("04", "个人博客", "TRANSMISSIONS", learning.get("lede", ""))]
+    parts.append('<section class="panel">')
+    parts.append(
+        f'<div class="card-hud-bar"><span>{esc(blog.get("title", "博客"))}</span>'
+        f'<span class="tag">{esc(learning.get("note_short", "PUBLISHED"))}</span></div>'
+    )
+    parts.append('<div class="log-list">')
+    for item in learning.get("items", []) or []:
+        title = esc(item.get("title", ""))
+        if item.get("url"):
+            title = f'<a href="{esc(item["url"])}">{title}</a>'
+        parts.append('<div class="log-item">')
+        parts.append(f'<div class="log-title">{title}</div>')
+        if item.get("date"):
+            parts.append(f'<div class="log-date">{esc(item["date"])}</div>')
+        if item.get("summary"):
+            parts.append(f'<div class="log-desc">{esc(item["summary"])}</div>')
+        if item.get("tags"):
+            tags = "".join(f'<span class="mission-tag">{esc(tag)}</span>' for tag in item["tags"])
+            parts.append(f'<div class="log-links">{tags}</div>')
+        parts.append("</div>")
+    parts.append("</div></section>")
+    return "\n".join(parts)
+
+
+def render_terminal_hud(spec: dict) -> str:
+    site = spec.get("site", {}) or {}
+    terminal = spec.get("terminal", {}) or {}
+    parts = [_hud_section_head("05", "终端", "TERMINAL", terminal.get("lede", ""))]
+    parts.append('<section class="panel">')
+    parts.append('<div class="card-hud-bar"><span>duk@agent-ops:~</span><span class="tag">CLI</span></div>')
+    parts.append('<div class="terminal">')
+    for line in terminal.get("lines", []) or []:
+        tone = line.get("tone", "")
+        text = esc(line.get("text", ""))
+        wrapped = f'<span class="{esc(tone)}">{text}</span>' if tone else text
+        parts.append(f'<div class="term-line">{wrapped}</div>')
+    parts.append('<div class="term-input"><span>➜</span><span>duk@agent-ops</span><span>~</span></div>')
+    parts.append("</div></section>")
+    return "\n".join(parts)
+
+
+HUD_PAGES = [
+    {"key": "overview", "file": "index.html", "idx": "01", "label": "概览", "en": "OVERVIEW", "tag": "CORE", "render": render_overview_hud},
+    {"key": "missions", "file": "missions.html", "idx": "02", "label": "项目", "en": "MISSIONS", "tag": "WORKS", "render": render_missions_hud},
+    {"key": "arsenal", "file": "arsenal.html", "idx": "03", "label": "武器库", "en": "ARSENAL", "tag": "STACK", "render": render_arsenal_hud},
+    {"key": "blog", "file": "blog.html", "idx": "04", "label": "个人博客", "en": "TRANSMISSIONS", "tag": "LOG", "render": render_blog_hud},
+    {"key": "terminal", "file": "terminal.html", "idx": "05", "label": "终端", "en": "TERMINAL", "tag": "CLI", "render": render_terminal_hud},
+]
+
+
+def build_site_hud(spec: dict) -> dict[str, str]:
+    site = spec.get("site", {}) or {}
+    home = spec.get("home", {}) or {}
+    footer = spec.get("footer", {}) or {}
+    files: dict[str, str] = {}
+
+    nav = [
+        {"href": page["file"], "idx": page["idx"], "label": page["label"], "en": page["en"], "tag": page["tag"]}
+        for page in HUD_PAGES
+    ]
+    live = home.get("live", []) or []
+    for page in HUD_PAGES:
+        body = page["render"](spec)
+        title = page["en"].title() if page["key"] == "overview" else f"{page['en'].title()} | {site.get('title', '')}"
+        files[page["file"]] = hud_style.shell(
+            page=page["file"],
+            title=title,
+            description=site.get("description", ""),
+            nav=nav,
+            body=body,
+            footer=footer,
+            site=site,
+            live=live,
+        )
+    files["assets/site.css"] = hud_style.CSS
+    files["assets/site.js"] = hud_style.JS
+    files["assets/content.js"] = build_content_js(spec)
+    files[".nojekyll"] = ""
+    files["404.html"] = hud_style.shell(
+        page="404.html",
+        title=f"页面不存在 | {site.get('title', '')}",
+        description=site.get("description", ""),
+        nav=nav,
+        body='<section class="panel"><div class="section-title"><span class="idx">404</span><span>NOT FOUND</span></div></section>',
+        footer=footer,
+        site=site,
+        live=live,
+    )
+    return files
+
 NEON_PAGES = {
     "open_source": ("open-source.html", "开源贡献", render_open_source_neon),
     "projects": ("projects.html", "项目", render_projects_neon),
@@ -1081,8 +1310,11 @@ def build_nav(spec: dict) -> list[dict]:
 
 def build_site(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
     """生成站点文件。fetch_posts=True 时会按 learning.blog.rss 拉取最新文章。"""
-    if spec.get("theme", {}).get("preset", "hybrid") == "neon-bento":
+    preset_name = spec.get("theme", {}).get("preset", "hybrid")
+    if preset_name == "neon-bento":
         return build_site_neon(spec, fetch_posts)
+    if preset_name == "hud":
+        return build_site_hud(spec)
     site = spec.get("site", {})
     base = {
         "title": site.get("title", ""),
