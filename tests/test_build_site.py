@@ -210,7 +210,7 @@ class NeonBentoTests(unittest.TestCase):
     def test_contact_items_render_text_and_copy(self):
         html = self.files["index.html"]
         self.assertIn("💬 微信 123", html)
-        self.assertIn("copyText('123'", html)
+        self.assertIn('data-copy-value="123"', html)
 
     def test_js_has_toast_copy(self):
         js = self.files["assets/site.js"]
@@ -288,6 +288,50 @@ class StructureBalanceTests(unittest.TestCase):
         files = build_site.build_site(NEON_SPEC)
         self.assertIn("个人博客", files["learning.html"])
         self.assertIn("个人博客", files["index.html"])
+
+
+class LiveDataTests(unittest.TestCase):
+    def test_live_row_is_rendered_with_data_live_markers(self):
+        spec = {
+            **NEON_SPEC,
+            "home": {
+                **NEON_SPEC["home"],
+                "live": [{"key": "mergedPRs", "label": "个已合并上游 PR", "value": "45"}],
+            },
+        }
+        html = build_site.build_site(spec)["index.html"]
+        self.assertIn('data-live="mergedPRs"', html)
+        self.assertIn("个已合并上游 PR", html)
+
+    def test_content_js_carries_github_username(self):
+        content = build_site.build_site({**NEON_SPEC, "username": "ada"})["assets/content.js"]
+        self.assertIn('"github"', content)
+        self.assertIn('"username": "ada"', content)
+
+    def test_runtime_js_queries_github_api(self):
+        js = build_site.build_site(NEON_SPEC)["assets/site.js"]
+        self.assertIn("api.github.com", js)
+        self.assertIn("is:pr author:", js)
+        self.assertIn("data-live", js)
+
+    def test_copy_button_uses_data_attributes_not_inline_js(self):
+        html = build_site.build_site(NEON_SPEC)["index.html"]
+        self.assertIn("data-copy-value=", html)
+        self.assertNotIn("onclick=", html)
+
+
+class StackMatrixTests(unittest.TestCase):
+    def test_stack_groups_render_on_projects_page(self):
+        spec = {
+            **NEON_SPEC,
+            "projects": {
+                **NEON_SPEC["projects"],
+                "stack": {"title": "技术栈矩阵", "groups": [{"label": "AGENT", "items": ["LangGraph"]}]},
+            },
+        }
+        html = build_site.build_site(spec)["projects.html"]
+        self.assertIn('data-list="projects.stack.groups"', html)
+        self.assertIn("技术栈矩阵", html)
 
 
 class ScriptTests(unittest.TestCase):

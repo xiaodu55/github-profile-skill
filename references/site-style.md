@@ -76,7 +76,30 @@
 | `home.highlights.items[]` | 数据卡的图标 + 标题 + 说明 |
 | `home.contact.items[]` | 联系卡条目（`icon` / `label` / `value` / `href` / `copy`） |
 
-## 五、自己编辑站点内容（不重新生成）
+## 五、动态数据
+
+站点有两种"动态"：
+
+1. **实时（浏览器端）**：`home.live[]` 里声明的指标，页面打开时直接向 GitHub 公开接口取值并替换：
+
+   ```json
+   "live": [
+     { "key": "mergedPRs", "label": "个已合并上游 PR", "value": "45" },
+     { "key": "repoCount", "label": "个公开仓库", "value": "27" },
+     { "key": "totalStars", "label": "总 Star", "value": "1" },
+     { "key": "followers", "label": "关注者", "value": "10" }
+   ]
+   ```
+
+   可用 key：`mergedPRs`（已合并 PR 总数）、`repoCount`（公开仓库数，含 fork）、`totalStars`（所有仓库 star 之和）、`topRepoStars`（最高 star）、`followers`、`publicRepos`、`publicGists`。`value` 是兜底值（接口失败时显示），会被实时值覆盖。
+
+   注意口径：`repoCount` 取自 `users/{u}/repos`，**包含 fork**；"自建非 fork 仓库"要用构建时抓的事实，静态写在文案里。
+
+2. **定时（构建时）**：`templates/site-refresh-workflow.yml` 是 GitHub Actions 模板，放进站点仓库后每天抓一次 GitHub 公开数据、重新渲染并提交，站点内容自动保鲜。
+
+博客文章（掘金等）**抓不到就手填**：这些平台普遍有反爬，普通 HTTP 请求只会拿到空壳，需要真实浏览器或 RSS；把文章写进 `content.js` 的 `learning.items` 即可。
+
+## 六、自己编辑站点内容（不重新生成）
 
 生成器会额外写一个 **`assets/content.js`**：
 
@@ -111,7 +134,7 @@ window.SITE_CONTENT = {
 
 抓取失败不阻断生成——博客暂时取不到就只保留卡片。命令行加 `--no-rss` 可以完全跳过抓取（离线或 CI 里用）。
 
-## 七、要不要问用户的站点问题
+## 八、要不要问用户的站点问题
 
 在采集问卷里新增"个人网站"一组：
 
@@ -122,7 +145,7 @@ window.SITE_CONTENT = {
 - 联系方式要不要一键复制？
 - 部署到哪？（`<user>.github.io` 独立仓库 / 主页仓库的 `docs/` 目录）
 
-## 八、部署
+## 九、部署
 
 两种常见方式，都不需要构建工具：
 
@@ -143,7 +166,7 @@ gh repo create xiaodu55.github.io --public --source=. --remote=origin --push
 # 分支 main，目录 / (root)，保存后等一两分钟
 ```
 
-## 九、注意事项
+## 十、注意事项
 
 - 站点是静态 HTML + 一份 CSS + 一份 JS，零依赖、零构建，10 年后照样能打开。
 - 所有数字与 PR 记录必须来自 GitHub 公开数据或用户口述，末尾写明数据来源与截止日期。

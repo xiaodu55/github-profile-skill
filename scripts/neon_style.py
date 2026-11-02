@@ -240,6 +240,20 @@ header {
 .highlight-desc { font-size: 0.88rem; color: var(--text-muted); }
 .highlight-desc strong { color: var(--text-main); }
 
+.live-card { padding: 1.1rem 1.8rem; }
+.live-row { display: flex; flex-wrap: wrap; gap: 2rem; align-items: baseline; }
+.live-item { display: flex; align-items: baseline; gap: 0.5rem; }
+.live-value { font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 700; color: var(--accent-neon); }
+.live-label { font-size: 0.82rem; color: var(--text-muted); }
+
+.stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; }
+.stack-group h4 {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em;
+  color: var(--accent-neon); margin-bottom: 0.5rem;
+}
+.stack-group ul { list-style: none; display: grid; gap: 0.3rem; }
+.stack-group li { color: var(--text-muted); font-size: 0.86rem; line-height: 1.5; }
+
 .card-contact {
   grid-column: span 12;
   display: flex; align-items: center; justify-content: space-between;
@@ -341,6 +355,13 @@ function copyText(text, message) {
   }
 }
 
+document.addEventListener('click', function (event) {
+  var button = event.target.closest ? event.target.closest('[data-copy-value]') : null;
+  if (button) {
+    copyText(button.getAttribute('data-copy-value'), button.getAttribute('data-copy-msg'));
+  }
+});
+
 /* ---- 内容覆盖：content.js 里的 SITE_CONTENT 会覆盖页面上 data-bind / data-list 标记的内容 ---- */
 (function () {
   var data = window.SITE_CONTENT;
@@ -388,7 +409,7 @@ function copyText(text, message) {
         var icon = c.icon || '', label = c.label || '', value = c.value || '';
         var text = [icon, label, value].filter(Boolean).join(' ');
         if (c.copy) {
-          return '<button class="contact-item" type="button" onclick="copyText(\'' + esc(value) + '\', \'' + esc(text) + ' 已复制\')">' +
+          return '<button class="contact-item" type="button" data-copy-value="' + esc(value) + '" data-copy-msg="' + esc(text) + ' 已复制">' +
             '<span>' + esc(text) + '</span></button>';
         }
         if (c.href) {
@@ -437,6 +458,12 @@ function copyText(text, message) {
           '</section>';
       }).join('');
     },
+    'projects.stack.groups': function (list) {
+      return list.map(function (group) {
+        var items = (group.items || []).map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('');
+        return '<div class="stack-group"><h4>' + esc(group.label || '') + '</h4><ul>' + items + '</ul></div>';
+      }).join('');
+    },
     'learning.items': function (list) {
       return list.map(function (item, index) {
         var title = item.url
@@ -463,6 +490,57 @@ function copyText(text, message) {
 
   setText(document, 'root');
   applyLists();
+
+  /* ---- GitHub 实时数据：页面打开时直接问 GitHub，数字永远是当下的 ---- */
+  function liveFetch() {
+    var live = document.querySelectorAll('[data-live]');
+    if (!live.length) { return; }
+    var cfg = data.github || {};
+    if (!cfg.username) { return; }
+    var headers = { 'Accept': 'application/vnd.github+json' };
+    if (cfg.token) { headers.Authorization = 'Bearer ' + cfg.token; }
+
+    function set(key, value) {
+      document.querySelectorAll('[data-live="' + key + '"]').forEach(function (node) {
+        node.textContent = value;
+      });
+    }
+
+    fetch('https://api.github.com/users/' + encodeURIComponent(cfg.username), { headers: headers })
+      .then(function (r) { return r.json(); })
+      .then(function (u) {
+        if (!u || u.errored) { return; }
+        set('followers', u.followers);
+        set('publicRepos', u.public_repos);
+        set('publicGists', u.public_gists);
+      })
+      .catch(function () {});
+
+    fetch('https://api.github.com/search/issues?q=' +
+      encodeURIComponent('is:pr author:' + cfg.username + ' is:merged') + '&per_page=1', { headers: headers })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res && typeof res.total_count === 'number') { set('mergedPRs', res.total_count); }
+      })
+      .catch(function () {});
+
+    fetch('https://api.github.com/users/' + encodeURIComponent(cfg.username) + '/repos?per_page=100&sort=stars', { headers: headers })
+      .then(function (r) { return r.json(); })
+      .then(function (repos) {
+        if (!Array.isArray(repos)) { return; }
+        var total = 0, top = 0;
+        repos.forEach(function (repo) {
+          total += repo.stargazers_count || 0;
+          if ((repo.stargazers_count || 0) > top) { top = repo.stargazers_count || 0; }
+        });
+        set('totalStars', total);
+        set('topRepoStars', top);
+        set('repoCount', repos.length);
+      })
+      .catch(function () {});
+  }
+
+  liveFetch();
 })();
 """
 

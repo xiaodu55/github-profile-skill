@@ -873,6 +873,17 @@ def render_home_neon(spec: dict) -> str:
         parts.append(f'<span class="chip">{esc(chip)}</span>')
     parts.append("</div></aside>")
 
+    live_rows = home.get("live", []) or []
+    if live_rows:
+        parts.append('<section class="card card-span-12 live-card">')
+        parts.append('<div class="live-row">')
+        for row in live_rows:
+            parts.append(
+                f'<div class="live-item"><span class="live-value" data-live="{esc(row.get("key", ""))}">'
+                f'{esc(row.get("value", "—"))}</span><span class="live-label">{esc(row.get("label", ""))}</span></div>'
+            )
+        parts.append("</div></section>")
+
     parts.append('<section class="card card-focus">')
     parts.append(f'<h2 class="card-title" data-bind="home.focus.title">{esc(focus.get("title", "核心工程方向"))}</h2>')
     focus_text = focus.get("text") or home.get("focus", "")
@@ -910,7 +921,7 @@ def render_home_neon(spec: dict) -> str:
         value = esc(item.get("value", ""))
         if item.get("copy"):
             parts.append(
-                f'<button class="contact-item" type="button" onclick="copyText(\'{value}\', \'{text} 已复制\')">'
+                f'<button class="contact-item" type="button" data-copy-value="{value}" data-copy-msg="{text} 已复制">'
                 f"<span>{text}</span></button>"
             )
         elif item.get("href"):
@@ -1000,6 +1011,12 @@ def render_projects_neon(spec: dict) -> str:
             parts.append(f'<p class="entry-summary">· {esc(point)}</p>')
         parts.append("</section>")
     parts.append("</div>")
+    stack = section.get("stack") or {}
+    if stack.get("groups"):
+        parts.append('<section class="card card-span-12">')
+        parts.append(f'<h2 class="card-title" data-bind="projects.stack.title">{esc(stack.get("title", "技术栈矩阵"))}</h2>')
+        parts.append('<div class="stack-grid" data-list="projects.stack.groups">')
+        parts.append("</div></section>")
     if section.get("note"):
         parts.append(f'<p class="data-note">{esc(section["note"])}</p>')
     return "\n".join(parts)
@@ -1146,6 +1163,9 @@ def build_content_js(spec: dict) -> str:
             "brand": site.get("brand", ""),
             "handle": site.get("handle", ""),
             "initials": site.get("initials", ""),
+        },
+        "github": {
+            "username": spec.get("username", "") or site.get("handle", "").lstrip("@"),
         },
         "home": {
             "hero": home.get("hero", {}) or {},

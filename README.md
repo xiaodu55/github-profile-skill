@@ -40,7 +40,7 @@ github-profile-skill/
 │   └── check_profile_readme.py          # README 静态自检
 ├── examples/
 │   └── README.data-narrative.example.md # 填好的样例（虚构数据），可直接看成品
-└── tests/                               # 82 条离线单元测试
+└── tests/                               # 87 条离线单元测试
 ```
 
 ## 安装
@@ -116,7 +116,7 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 python3 -m unittest discover -s tests -t . -v
 ```
 
-82 条用例全部通过（自检脚本 19 条、取数脚本 4 条、渲染器 15 条、问卷 8 条、站点 36 条），全部离线运行；CI 在 Ubuntu 与 Windows 上各跑一遍，并额外校验样例 README 仍然零错误。
+87 条用例全部通过（自检脚本 19 条、取数脚本 4 条、渲染器 15 条、问卷 8 条、站点 41 条），全部离线运行；CI 在 Ubuntu 与 Windows 上各跑一遍，并额外校验样例 README 仍然零错误。
 
 ## 参考来源
 
