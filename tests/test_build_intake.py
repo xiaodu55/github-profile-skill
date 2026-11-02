@@ -33,8 +33,23 @@ class QuestionnaireTests(unittest.TestCase):
         self.text = build_intake.build_questionnaire("ada", FACTS)
 
     def test_covers_all_intake_sections(self):
-        for heading in ("身份与首屏", "当前状态", "代表项目", "上游贡献", "专注方向", "技术栈", "联系方式", "版式与视觉"):
+        for heading in (
+            "身份与首屏",
+            "当前状态",
+            "代表项目",
+            "上游贡献",
+            "专注方向",
+            "技术栈",
+            "联系方式",
+            "版式与视觉",
+            "个人网站",
+        ):
             self.assertIn(heading, self.text)
+
+    def test_asks_user_to_choose_site_style(self):
+        self.assertIn("spec：`theme.preset`", self.text)
+        self.assertIn("hybrid", self.text)
+        self.assertIn("runoob-classic", self.text)
 
     def test_prefills_public_facts(self):
         self.assertIn("Building agents", self.text)

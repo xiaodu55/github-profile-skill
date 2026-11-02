@@ -60,3 +60,10 @@ jobs:
         run: |
           python scripts/build_intake.py --user ada --facts build/facts.json > build/intake.md 2>/dev/null || python scripts/build_intake.py --user ada > build/intake.md
           test -s build/intake.md
+
+      - name: The site generator must still build every page
+        run: |
+          python scripts/build_site.py --spec assets/site.example.json --out build/site
+          for page in index.html open-source.html projects.html learning.html assets/site.css assets/site.js; do
+            test -s "build/site/$page" || (echo "missing $page" && exit 1)
+          done

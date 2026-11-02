@@ -73,7 +73,25 @@ python3 scripts/render_profile_readme.py --spec <spec.json> --facts <facts.json>
 - `templates/README.minimal-engineering.md`：极简工程型（about + 技术栈 + 精选项目）。
 - `templates/profile-stats-workflow.yml`：自托管统计卡的 GitHub Actions。
 
-### 6. 自检
+### 6. 个人网站（用户要才有）
+
+README 之外，很多人的主页会再挂一个个人站点（像 `jasonbuildai.github.io` 那样），把履历与过程展开。**风格必须让用户选**，不要替他决定。
+
+1. 问卷里问清：要不要站点、要哪几页、风格预设、主色与圆角、联系方式要不要复制按钮、部署到独立仓库还是主页仓库的 `docs/`；
+2. 复制 `assets/site.example.json` 改成站点 spec，字段含义见 `references/site-style.md`；
+3. 生成：
+
+```bash
+python3 scripts/build_site.py --spec <site.json> --out <输出目录>
+```
+
+产出首页、开源贡献、项目、学习笔记四个页面（缺哪段就不生成哪页），外加 `assets/site.css`、`assets/site.js` 和 `404.html`。零依赖、零构建，直接丢进 GitHub Pages 就能上线。
+
+4. **上线前必须用浏览器看过**：本地起一个静态服务，逐页截图检查浅色/深色两种模式，确认导航高亮、面包屑、复制按钮、长表格不溢出。
+
+站点内容结构与视觉规则（分节方式、设计令牌、排版基线、三种风格预设、部署方式）见 `references/site-style.md`。
+
+### 7. 自检
 
 ```bash
 python3 scripts/check_profile_readme.py README.md --username <github-handle>
@@ -81,7 +99,7 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 
 脚本检查占位符残留、缺 `alt` 的图片、`<picture>` 缺少深浅双主题、表格列数不一致、`http://` 外链、自指仓库 owner 不一致、动态卡过多。**必须零错误**才能交付；有警告时先判断是否需要修，再向用户说明。
 
-### 7. 交付
+### 8. 交付
 
 给出：
 
@@ -92,23 +110,27 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 ## 硬规则
 
 - **生成前必须先问本人个人信息**：定位句、"做了什么"、专注方向、联系方式这些只能问，不能推断；没答的标"待补充"，不替他编。
+- **网站风格必须由用户选**：不替用户决定视觉预设、主色与圆角。
 - 不编造 star、PR 数、贡献数、任职经历、获奖；取不到就删掉那一行或整节。
 - 动态卡不超过 2 处，徽章一行不超过 6 个，并排图片宽度统一 `49%`。
 - 每张表写清数据口径与日期；每个"做了什么"用动词开头并给出结果。
 - 不把关键信息放进 `<details>` 折叠。
-- 交付前自检零错误；自检不通过不出最终稿。
+- 交付前自检零错误；自检不通过不出最终稿；站点上线前必须浏览器逐页看过。
 
 ## 资源
 
 - `references/spec-fields.md`：spec 字段契约、layout、区块、图标解析与 facts 合并规则。
 - `references/style-patterns.md`：三种范式的骨架、视觉硬约束、文案公式、双语写法、反面清单。
+- `references/site-style.md`：个人网站的页面结构、设计令牌、排版基线、三种风格预设与部署方式。
 - `references/widgets.md`：组件目录与可靠性分级、降级方案、自托管卡片工作流。
 - `references/intake.md`：必填信息、公开接口取证方法、只能口述的部分、降级策略、交付前确认项。
-- `assets/profile.example.json`：可直接改写的 spec 示例。
+- `assets/profile.example.json`：可直接改写的 README spec 示例。
+- `assets/site.example.json`：可直接改写的站点 spec 示例。
 - `templates/`：三套 README 骨架与 GitHub Actions 模板。
 - `scripts/fetch_profile_facts.py`：采集公开事实，输出 JSON。
 - `scripts/build_intake.py`：生成"生成前必问"的信息采集问卷（公开数据预填 + 需用户补充项）。
 - `scripts/render_profile_readme.py`：按 spec 渲染 README（确定性输出）。
+- `scripts/build_site.py`：按站点 spec 生成静态个人网站。
 - `scripts/check_profile_readme.py`：README 静态自检。
 
 ## 衔接

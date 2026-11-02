@@ -1,0 +1,117 @@
+{
+  "site": {
+    "title": "Ada Chen | Agent Runtime 与执行安全",
+    "brand": "Ada Chen",
+    "author": "Ada Chen",
+    "description": "Ada Chen 的个人站点：Agent 运行时、执行安全与跨平台工程。",
+    "base_url": "https://ada.github.io"
+  },
+  "theme": {
+    "preset": "hybrid"
+  },
+  "home": {
+    "title": "你好，我是 Ada Chen。",
+    "lede": "Agent Runtime Engineer，专注让 Agent 跑得起、跑得稳、跑得安全。",
+    "paragraphs": [
+      "我目前专注于 Agent Harness、Agent Runtime、执行安全与跨平台工程，致力于消除 AI Agent 在编码、路径、流、状态与凭据边界上的静默失败。",
+      "我深度参与多个高热度开源项目（详见开源贡献页），设计与修复并行的功能。我希望通过持续学习与实践，做出真正有影响力的工作。"
+    ],
+    "focus_title": "专注方向",
+    "focus": "Agent Runtime & Reliability、Sandboxing & Execution Safety、Cross-platform Engineering。",
+    "stats": [
+      ["Merged PRs", 59],
+      ["Upstream projects", 7],
+      ["Own repos", 24],
+      ["Followers", 312]
+    ],
+    "recent_title": "最近在做",
+    "recent": "openclaw 流式吞吐、OpenSandbox SDK 安全、loopx Windows 协同。",
+    "contact_title": "联系方式",
+    "contact_intro": "欢迎主动联系我：合作开发、交流技术，或聊聊生活与爱好。",
+    "contact": [
+      { "label": "Email", "value": "ada@example.org", "href": "mailto:ada@example.org", "copy": true },
+      { "label": "GitHub", "value": "github.com/ada", "href": "https://github.com/ada" }
+    ],
+    "note": "本站内容核对自 GitHub 公开数据，最后更新于 2026-11-02。"
+  },
+  "open_source": {
+    "title": "开源贡献",
+    "lede": "我持续参与 Agent 运行时、沙箱执行安全与跨平台工程。下面先列出主要工作与代表 PR，再附上参与过的仓库。",
+    "entries_title": "主要贡献",
+    "entries": [
+      {
+        "repo": "acme/agent-runtime",
+        "role": "活跃贡献者",
+        "summary": "维护调度与租约链路：把粗粒度并发判定换成按事件状态分类，投递失败不再降级整轮运行。",
+        "prs": [
+          { "number": 7636, "title": "阻断未标注凭据的出站请求", "url": "https://github.com/acme/agent-runtime/pull/7636" },
+          { "number": 7477, "title": "停止竞态下保留完整 Turn 历史", "url": "https://github.com/acme/agent-runtime/pull/7477" },
+          { "number": 7381, "title": "恢复被中断的 Goal 创建", "url": "https://github.com/acme/agent-runtime/pull/7381" }
+        ],
+        "all_link": "https://github.com/search?q=repo%3Aacme%2Fagent-runtime+author%3Aada&type=issues"
+      },
+      {
+        "repo": "acme/sandbox",
+        "role": "核心贡献者",
+        "summary": "统一多语言 SDK 与 CLI 的安全一致性：租户密钥隔离、幂等重试、原子文件写入与上传下载超时。",
+        "prs": [
+          { "number": 2433, "title": "原子上传失败时保留旧文件", "url": "https://github.com/acme/sandbox/pull/2433" },
+          { "number": 2149, "title": "隔离租户密钥与代理请求", "url": "https://github.com/acme/sandbox/pull/2149" }
+        ],
+        "all_link": "https://github.com/search?q=repo%3Aacme%2Fsandbox+author%3Aada&type=issues"
+      }
+    ],
+    "index_title": "参与过的仓库",
+    "index_intro": "除上面的项目外，我也在以下仓库提交过已合并改动。点击仓库名可查看记录。",
+    "repo_index": [
+      { "repo": "acme/agent-runtime", "url": "https://github.com/acme/agent-runtime/pulls?q=is%3Apr+author%3Aada+is%3Amerged" },
+      { "repo": "acme/sandbox", "url": "https://github.com/acme/sandbox/pulls?q=is%3Apr+author%3Aada+is%3Amerged" },
+      { "repo": "acme/eval-harness", "url": "https://github.com/acme/eval-harness/pulls?q=is%3Apr+author%3Aada+is%3Amerged" }
+    ],
+    "data_note": "数据说明：代表 PR 与仓库记录均核对自 GitHub，最后更新于 2026-11-02。未合并、草稿或已关闭但未合并的记录不计入。"
+  },
+  "projects": {
+    "title": "项目",
+    "lede": "从课程作业到可用的平台工具，这里是几个我完整做完并仍在维护的项目。",
+    "items": [
+      {
+        "name": "CoreCoder",
+        "url": "https://github.com/ada/CoreCoder",
+        "tags": ["Python", "Agent"],
+        "summary": "把庞大的参考实现蒸馏成 1,309 行可运行引擎，保留关键架构模式。",
+        "points": ["每个模式都有可运行实现与最小用例", "配套 8 篇架构拆解文章"]
+      },
+      {
+        "name": "RepoWiki",
+        "url": "https://github.com/ada/RepoWiki",
+        "tags": ["CLI", "知识库"],
+        "summary": "开源的 DeepWiki 替代方案：CLI 与浏览器双入口，输出知识卡片与多轮问答。",
+        "points": ["按 PageRank 排序文件", "生成 Mermaid 图与阅读指引"]
+      }
+    ],
+    "note": "项目列表会随仓库更新同步。"
+  },
+  "learning": {
+    "title": "学习空间",
+    "lede": "持续更新的学习笔记：读过的源码、踩过的坑与可复现的实验。",
+    "items": [
+      {
+        "title": "Agent 运行时里的静默失败",
+        "date": "2026-10",
+        "tags": ["Agent", "Runtime"],
+        "summary": "梳理编码、路径、流、状态与凭据五类边界上的失败模式，附最小复现。"
+      },
+      {
+        "title": "Windows 上的并发与编码陷阱",
+        "date": "2026-09",
+        "tags": ["跨平台", "Go"],
+        "summary": "从一组跨主机测试失败出发，总结路径分隔符、UTF-8 与锁语义的差异。"
+      }
+    ],
+    "note": "笔记以「问题—证据—结论」三段式记录。"
+  },
+  "footer": {
+    "text": "© 2026 Ada Chen",
+    "meta": "由 github-profile-skill 生成"
+  }
+}

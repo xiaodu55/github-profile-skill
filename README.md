@@ -20,10 +20,12 @@ github-profile-skill/
 ├── references/
 │   ├── spec-fields.md                   # spec 字段契约、layout、区块、图标解析、facts 合并
 │   ├── style-patterns.md                # 三套范式骨架、视觉硬约束、文案公式、反面清单
+│   ├── site-style.md                    # 站点页面结构、设计令牌、排版基线、风格预设、部署
 │   ├── widgets.md                       # 组件目录（Tier A/B/C）与降级方案
 │   └── intake.md                        # 信息清单、取证方法、降级策略、交付前确认项
 ├── assets/
-│   └── profile.example.json             # 可直接改写的 spec 示例
+│   ├── profile.example.json             # 可直接改写的 README spec 示例
+│   └── site.example.json                # 可直接改写的站点 spec 示例
 ├── templates/
 │   ├── README.data-narrative.md         # 范式 A：数据叙事型
 │   ├── README.visual-studio.md          # 范式 B：视觉设计型
@@ -33,10 +35,11 @@ github-profile-skill/
 │   ├── fetch_profile_facts.py           # 采集公开事实（纯标准库，无第三方依赖）
 │   ├── build_intake.py                  # 生成"生成前必问"的信息采集问卷
 │   ├── render_profile_readme.py         # 按 spec 渲染 README（确定性输出）
+│   ├── build_site.py                    # 按站点 spec 生成静态个人网站
 │   └── check_profile_readme.py          # README 静态自检
 ├── examples/
 │   └── README.data-narrative.example.md # 填好的样例（虚构数据），可直接看成品
-└── tests/                               # 44 条离线单元测试
+└── tests/                               # 58 条离线单元测试
 ```
 
 ## 安装
@@ -71,8 +74,9 @@ cp -r github-profile-skill ~/.claude/skills/github-profile
 2. **采集个人信息（必问）**：`scripts/build_intake.py` 生成问卷——公开数据能确认的预填让用户确认，定位句/"做了什么"/专注方向/联系方式等必须用户给，一次问全；
 3. **选型**：按范式选骨架，按可靠性选组件（Tier A 静态优先，Tier B 动态必须配降级方案）；
 4. **渲染**：把问卷答案写进 spec JSON → `scripts/render_profile_readme.py` 出初稿 → 人工润色；
-5. **自检**：`scripts/check_profile_readme.py` 零错误才交付；
-6. **交付**：给出 README、"需要你自己做的事"清单、数据口径说明。
+5. **个人网站**（用户要才有）：`scripts/build_site.py` 生成静态站点；**风格预设由用户选**，上线前用浏览器逐页检查浅色/深色两套；
+6. **自检**：`scripts/check_profile_readme.py` 零错误才交付；
+7. **交付**：给出 README、"需要你自己做的事"清单、数据口径说明。
 
 ### 手动使用脚本
 
@@ -85,6 +89,9 @@ python3 scripts/build_intake.py --user <github-handle> --facts facts.json
 
 # 按 spec 渲染 README
 python3 scripts/render_profile_readme.py --spec assets/profile.example.json --facts facts.json --out README.md
+
+# 生成静态个人网站
+python3 scripts/build_site.py --spec assets/site.example.json --out site/
 
 # 自检生成的 README
 python3 scripts/check_profile_readme.py README.md --username <github-handle>
@@ -108,7 +115,7 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 python3 -m unittest discover -s tests -t . -v
 ```
 
-44 条用例全部通过（自检脚本 19 条、取数脚本 4 条、渲染器 14 条、问卷 7 条），全部离线运行；CI 在 Ubuntu 与 Windows 上各跑一遍，并额外校验样例 README 仍然零错误。
+58 条用例全部通过（自检脚本 19 条、取数脚本 4 条、渲染器 14 条、问卷 8 条、站点 13 条），全部离线运行；CI 在 Ubuntu 与 Windows 上各跑一遍，并额外校验样例 README 仍然零错误。
 
 ## 参考来源
 

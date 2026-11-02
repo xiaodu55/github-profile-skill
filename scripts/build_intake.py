@@ -177,6 +177,24 @@ def build_questionnaire(username: str, facts: dict) -> str:
     )
     lines.append("")
 
+    # 11 个人网站
+    lines.append("## 11. 个人网站（可选，但风格要你定）")
+    lines.append("")
+    lines.append(_bullet("site", "要不要再做一个个人网站？（很多主页会挂一个站点展开履历）"))
+    lines.append(_bullet("nav[]", "站点要哪几页？（首页 / 开源贡献 / 项目 / 学习笔记）"))
+    lines.append(
+        _bullet(
+            "theme.preset",
+            "风格预设选哪个？`hybrid`（干净现代，默认）/ `shadcn-neutral`（全中性极简）/ `runoob-classic`（蓝链经典文档风）",
+            "hybrid",
+        )
+    )
+    lines.append(_bullet("theme.primary", "主色要改吗？（默认蓝；可给一个 hex）"))
+    lines.append(_bullet("theme.radius", "圆角要改吗？（默认 0.5rem）"))
+    lines.append(_bullet("home.contact[].copy", "联系方式要不要一键复制按钮？"))
+    lines.append(_bullet("deploy", "部署到哪？`<用户名>.github.io` 独立仓库，还是主页仓库的 `docs/` 目录？"))
+    lines.append("")
+
     lines.append("---")
     lines.append("")
     lines.append("回答完以上问题后，我会把答案写进 spec 并渲染，再跑自检。")
