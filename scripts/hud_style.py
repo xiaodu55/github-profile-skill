@@ -473,6 +473,7 @@ def shell(
         for item in live_items
     )
     status = site.get("status", "")
+    entry_attr = ' data-entry="1"' if entry else ''
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -484,7 +485,7 @@ def shell(
   <link rel="stylesheet" href="assets/site.css">
   <script>try {{ if (sessionStorage.getItem('hud_booted') === '1') {{ document.documentElement.className += ' no-boot'; }} }} catch (e) {{}}</script>
 </head>
-<body{" data-entry=\"1\"" if entry else ""}>
+<body{entry_attr}>
 <div class="scanlines" aria-hidden="true"></div>
 <canvas id="neuralCanvas" aria-hidden="true"></canvas>
 
