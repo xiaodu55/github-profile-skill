@@ -77,6 +77,11 @@
 | `projects.chrono[]` | 经历线（`period` / `title` / `detail`） |
 | `learning.items[]` | 个人博客条目（标题 / 链接 / 日期 / 标签 / 摘要） |
 | `terminal.lines[]` | 终端面板输出（`text` / `tone`：ok / warn / err） |
+| `terminal.commands{}` | 终端可输入的命令 → 回复文本（键名即命令，如 `help` / `whoami` / `status`） |
+| `boot_lines[]` | 启动序列逐行文案（可用 `<b>` 强调） |
+| `i18n.zh` / `i18n.en` | 双语词典，键是 `data-bind` 路径（如 `home.hero.title`、`nav.overview.label`） |
+
+HUD 版式带的四个交互：**启动序列**（按 `boot_lines` 逐行打印 + 进度条，完成后淡出移除）、**神经网络背景 canvas**（粒子连线）、**雷达扫描 canvas**（带方位角读数）、**双语切换**（顶栏 `ZH / EN` 按钮，按 `i18n` 词典替换 `data-bind` 文本）、**可输入终端**（回车执行 `terminal.commands`，`clear` 清屏）。
 
 ### 霓虹 Bento 的 spec 字段
 

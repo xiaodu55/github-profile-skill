@@ -403,6 +403,65 @@ class HudPresetTests(unittest.TestCase):
         self.assertIn('class="ok"', self.files["terminal.html"])
 
 
+HUD_INTERACTIONS = {
+    **HUD_SPEC,
+    "boot_lines": ["> booting ... ok"],
+    "i18n": {"zh": {"home.hero.title": "用确定性工程"}, "en": {"home.hero.title": "Deterministic engineering"}},
+    "terminal": {
+        **HUD_SPEC["terminal"],
+        "commands": {"help": "可用命令：whoami / status"},
+    },
+}
+
+
+class HudInteractionTests(unittest.TestCase):
+    def setUp(self):
+        self.files = build_site.build_site(HUD_INTERACTIONS)
+
+    def test_boot_overlay_is_rendered(self):
+        html = self.files["index.html"]
+        self.assertIn('id="bootOverlay"', html)
+        self.assertIn('id="bootLog"', html)
+        self.assertIn('id="bootProgress"', html)
+
+    def test_canvas_layers_exist(self):
+        html = self.files["index.html"]
+        self.assertIn('id="neuralCanvas"', html)
+        self.assertIn('id="radarCanvas"', html)
+        self.assertIn('id="radarAzimuth"', html)
+
+    def test_language_toggle_exists(self):
+        html = self.files["index.html"]
+        self.assertIn('id="langToggleBtn"', html)
+        self.assertIn('id="langCurrent"', html)
+
+    def test_terminal_has_output_and_input(self):
+        html = self.files["terminal.html"]
+        self.assertIn('id="termOutput"', html)
+        self.assertIn('id="termInput"', html)
+
+    def test_content_js_carries_boot_lines_commands_and_i18n(self):
+        content = self.files["assets/content.js"]
+        self.assertIn("boot_lines", content)
+        self.assertIn("SITE_I18N", content)
+        self.assertIn("Deterministic engineering", content)
+        self.assertIn("可用命令", content)
+
+    def test_interaction_script_is_bundled(self):
+        js = self.files["assets/site.js"]
+        self.assertIn("bootOverlay", js)
+        self.assertIn("neuralCanvas", js)
+        self.assertIn("radarCanvas", js)
+        self.assertIn("SITE_I18N", js)
+        self.assertIn("termInput", js)
+
+    def test_binds_are_marked_for_i18n(self):
+        html = self.files["index.html"]
+        self.assertIn('data-bind="home.hero.title"', html)
+        self.assertIn('data-bind="home.hero.highlight"', html)
+        self.assertIn('data-bind="nav.overview.label"', html)
+
+
 class ScriptTests(unittest.TestCase):
     def test_js_handles_theme_toggle_and_copy(self):
         js = build_site.build_site(SPEC_DATA)["assets/site.js"]

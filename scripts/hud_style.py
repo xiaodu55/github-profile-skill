@@ -13,7 +13,12 @@
 from __future__ import annotations
 
 import html
+from pathlib import Path as _Path
 
+
+
+# 交互脚本（启动序列 / 神经网络背景 / 雷达 / 双语切换 / 终端输入）
+JS_EXTRA = (_Path(__file__).with_name('hud_interactions.js')).read_text(encoding='utf-8')
 
 def esc(text: object) -> str:
     return html.escape(str(text if text is not None else ""), quote=True)
@@ -247,6 +252,47 @@ body {
   color: var(--text-primary); font-family: var(--font-mono); font-size: 12.5px;
 }
 
+/* ---- 启动序列 ---- */
+.boot-overlay {
+  position: fixed; inset: 0; z-index: 200; background: var(--bg-void);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .5s ease; font-family: var(--font-mono);
+}
+.boot-overlay.done { opacity: 0; pointer-events: none; }
+.boot-box { width: min(520px, 84vw); }
+.boot-logo { font-size: 24px; font-weight: 700; letter-spacing: 3px; font-style: italic; margin-bottom: 16px; color: #fff; }
+.boot-log { font-size: 11px; color: var(--text-muted); height: 16px; margin-bottom: 10px; letter-spacing: .5px; }
+.boot-log b { color: var(--accent-cyan); font-weight: 500; }
+.boot-bar-frame { height: 8px; border: 1px solid var(--border-titanium); clip-path: var(--cut-sm); padding: 1px; }
+.boot-bar-progress { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-red)); transition: width .25s ease; }
+
+/* ---- 背景与雷达 ---- */
+#neuralCanvas { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; opacity: .45; }
+.shell { position: relative; z-index: 10; }
+.radar-card { display: flex; flex-direction: column; }
+.radar-wrapper { position: relative; aspect-ratio: 1 / 1; max-height: 320px; }
+#radarCanvas { width: 100%; height: 100%; display: block; }
+.radar-coords { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-top: 8px; letter-spacing: .5px; }
+.radar-coords b { color: var(--accent-cyan); font-weight: 600; }
+
+/* ---- 终端输入 ---- */
+.term-output { max-height: 320px; overflow-y: auto; }
+.term-input { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--accent-cyan); }
+.term-input input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text-primary); font-family: var(--font-mono); font-size: 12.5px;
+}
+.term-input input::placeholder { color: var(--text-dim); }
+
+/* ---- 双语切换 ---- */
+.lang-btn {
+  cursor: pointer; background: transparent; border: 1px solid var(--border-titanium);
+  color: var(--accent-cyan); font-family: var(--font-mono); font-size: 11px;
+  padding: 4px 10px; clip-path: var(--cut-sm); letter-spacing: 1px; transition: all .18s ease;
+}
+.lang-btn:hover { background: rgba(0, 240, 255, .12); }
+.lang-current { color: var(--accent-cyan); font-weight: 600; }
+
 .footer-hud {
   border-top: 1px solid var(--border-titanium); margin-top: 30px; padding-top: 12px;
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; color: var(--text-dim);
@@ -318,7 +364,7 @@ JS = """// HUD 版式脚本：时钟 + GitHub 实时数据 + 复制提示
     })
     .catch(function () {});
 })();
-"""
+""" + JS_EXTRA
 
 
 def nav_html(nav: list[dict], current: str) -> str:
@@ -328,7 +374,7 @@ def nav_html(nav: list[dict], current: str) -> str:
         items.append(
             f'<li><a class="nav-btn{active}" href="{esc(entry.get("href"))}">'
             f'<span class="left-content"><span class="nav-idx">{esc(entry.get("idx", ""))}</span>'
-            f'<span class="nav-label">{esc(entry.get("label"))}</span></span>'
+            f'<span class="nav-label" data-bind="nav.{esc(entry.get("key", ""))}.label">{esc(entry.get("label"))}</span></span>'
             f'<span class="nav-tag">{esc(entry.get("tag", ""))}</span></a></li>'
         )
     return "\n          ".join(items)
@@ -365,6 +411,15 @@ def shell(
 </head>
 <body>
 <div class="scanlines" aria-hidden="true"></div>
+<canvas id="neuralCanvas" aria-hidden="true"></canvas>
+
+<div class="boot-overlay" id="bootOverlay">
+  <div class="boot-box">
+    <div class="boot-logo">{esc(site.get("brand", ""))} // {esc(site.get("brand_tag", "AGENT OPS"))}</div>
+    <div class="boot-log" id="bootLog">&gt; booting ...</div>
+    <div class="boot-bar-frame"><div class="boot-bar-progress" id="bootProgress"></div></div>
+  </div>
+</div>
 
 <header class="hud">
   <div class="hud__inner">
@@ -375,6 +430,7 @@ def shell(
     <div class="hud-right">
       <div class="hud-chip"><span>TZ</span><strong>{esc(site.get("tz", "UTC+8"))}</strong></div>
       <div class="hud-chip"><span>UTC</span><strong id="hudClock">00:00:00</strong></div>
+      <button class="lang-btn" type="button" id="langToggleBtn"><span class="lang-current" id="langCurrent">ZH</span> / <span id="langAlt">EN</span></button>
     </div>
   </div>
 </header>

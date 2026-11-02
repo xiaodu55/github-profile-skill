@@ -1086,13 +1086,13 @@ def render_overview_hud(spec: dict) -> str:
     parts = [_hud_section_head("01", "概览", "OVERVIEW", home.get("lede", ""))]
     parts.append('<div class="grid-2">')
     parts.append('<section class="panel">')
-    parts.append(f'<div class="kicker">{esc(hero.get("tagline", ""))}</div>')
-    headline = esc(hero.get("title", ""))
+    parts.append(f'<div class="kicker" data-bind="home.hero.tagline">{esc(hero.get("tagline", ""))}</div>')
+    headline = f'<span data-bind="home.hero.title">{esc(hero.get("title", ""))}</span>'
     if hero.get("highlight"):
-        headline += f'<br><span class="hl">{esc(hero["highlight"])}</span>'
+        headline += f'<br><span class="hl" data-bind="home.hero.highlight">{esc(hero["highlight"])}</span>'
     parts.append(f'<h1 class="hero-headline">{headline}</h1>')
-    for paragraph in hero.get("paragraphs", []) or ([hero["bio"]] if hero.get("bio") else []):
-        parts.append(f'<p class="hero-manifesto">{esc(paragraph)}</p>')
+    for index, paragraph in enumerate(hero.get("paragraphs", []) or ([hero["bio"]] if hero.get("bio") else [])):
+        parts.append(f'<p class="hero-manifesto" data-bind="home.hero.paragraph.{index}">{esc(paragraph)}</p>')
     live = home.get("live", []) or []
     if live:
         cells = "".join(
@@ -1108,16 +1108,6 @@ def render_overview_hud(spec: dict) -> str:
             cls = "btn-tactical" if action.get("primary") else "btn-ghost"
             parts.append(f'<a class="{cls}" href="{esc(action.get("url", "#"))}">{esc(action.get("label", ""))}</a>')
         parts.append("</div>")
-    systems = (spec.get("projects", {}) or {}).get("items", []) or []
-    if systems:
-        parts.append('<div class="card-hud-bar" style="margin-top:18px;"><span>系统清单 / SYSTEMS</span><span class="tag">3</span></div>')
-        for index, item in enumerate(systems, start=1):
-            parts.append(
-                f'<div class="tl-row" style="grid-template-columns:96px 1fr;">'
-                f'<div class="tl-period">{esc(item.get("code") or f"0{index}")}</div>'
-                f'<div><div class="tl-title">{esc(item.get("name", ""))}</div>'
-                f'<div class="tl-body">{esc(item.get("summary", ""))[:96]}</div></div></div>'
-            )
     parts.append("</section>")
 
     highlights = home.get("highlights", {}) or {}
@@ -1132,6 +1122,31 @@ def render_overview_hud(spec: dict) -> str:
             f'<div class="mission-head"><span class="mission-name">{esc(item.get("icon", ""))} {esc(item.get("title", ""))}</span></div>'
             f'<div class="mission-desc">{esc(item.get("desc", ""))}</div></div>'
         )
+    parts.append("</section>")
+    parts.append("</div>")
+
+    parts.append('<div class="grid-2">')
+    systems = (spec.get("projects", {}) or {}).get("items", []) or []
+    if systems:
+        parts.append('<section class="panel">')
+        parts.append('<div class="card-hud-bar"><span>系统清单 / SYSTEMS</span><span class="tag">3</span></div>')
+        for index, item in enumerate(systems, start=1):
+            parts.append(
+                f'<div class="tl-row" style="grid-template-columns:96px 1fr;">'
+                f'<div class="tl-period">{esc(item.get("code") or f"0{index}")}</div>'
+                f'<div><div class="tl-title">{esc(item.get("name", ""))}</div>'
+                f'<div class="tl-body">{esc(item.get("summary", ""))[:110]}</div></div></div>'
+            )
+        parts.append("</section>")
+
+    parts.append('<section class="panel radar-card">')
+    parts.append('<div class="card-hud-bar"><span>扫描矩阵 / SWEEP MATRIX</span><span class="tag">SCAN: ACTIVE</span></div>')
+    parts.append('<div class="radar-wrapper"><canvas id="radarCanvas"></canvas></div>')
+    parts.append(
+        '<div class="radar-coords"><span>FREQ: 440.0Hz</span>'
+        '<span>AZIMUTH: <b id="radarAzimuth">032°</b></span>'
+        '<span>BEARING: 184.2</span></div>'
+    )
     parts.append("</section>")
     parts.append("</div>")
     return "\n".join(parts)
@@ -1225,12 +1240,17 @@ def render_terminal_hud(spec: dict) -> str:
     parts.append('<section class="panel">')
     parts.append('<div class="card-hud-bar"><span>duk@agent-ops:~</span><span class="tag">CLI</span></div>')
     parts.append('<div class="terminal">')
+    parts.append('<div class="term-output" id="termOutput">')
     for line in terminal.get("lines", []) or []:
         tone = line.get("tone", "")
         text = esc(line.get("text", ""))
         wrapped = f'<span class="{esc(tone)}">{text}</span>' if tone else text
         parts.append(f'<div class="term-line">{wrapped}</div>')
-    parts.append('<div class="term-input"><span>➜</span><span>duk@agent-ops</span><span>~</span></div>')
+    parts.append("</div>")
+    parts.append(
+        '<div class="term-input"><span>➜</span><span>duk@agent-ops</span><span>~</span>'
+        '<input id="termInput" type="text" autocomplete="off" placeholder="输入 help 后回车…" /></div>'
+    )
     parts.append("</div></section>")
     return "\n".join(parts)
 
@@ -1251,7 +1271,14 @@ def build_site_hud(spec: dict) -> dict[str, str]:
     files: dict[str, str] = {}
 
     nav = [
-        {"href": page["file"], "idx": page["idx"], "label": page["label"], "en": page["en"], "tag": page["tag"]}
+        {
+            "href": page["file"],
+            "idx": page["idx"],
+            "label": page["label"],
+            "en": page["en"],
+            "tag": page["tag"],
+            "key": page["key"],
+        }
         for page in HUD_PAGES
     ]
     live = home.get("live", []) or []
@@ -1391,6 +1418,8 @@ def build_content_js(spec: dict) -> str:
     site = spec.get("site", {}) or {}
     home = spec.get("home", {}) or {}
     payload = {
+        "boot_lines": spec.get("boot_lines", []) or [],
+        "i18n": spec.get("i18n", {}) or {},
         "site": {
             "brand": site.get("brand", ""),
             "handle": site.get("handle", ""),
@@ -1409,12 +1438,15 @@ def build_content_js(spec: dict) -> str:
         "open_source": spec.get("open_source", {}) or {},
         "projects": spec.get("projects", {}) or {},
         "learning": spec.get("learning", {}) or {},
+        "terminal": spec.get("terminal", {}) or {},
     }
     body = json.dumps(payload, ensure_ascii=False, indent=2)
+    i18n = json.dumps(payload.get("i18n", {}) or {}, ensure_ascii=False, indent=2)
     return (
         "// 站点内容文件：改这里就能改网站，不用重新生成。\n"
         "// 字段含义见仓库 README 的「自己编辑站点内容」一节。\n"
         "window.SITE_CONTENT = " + body + ";\n"
+        "window.SITE_I18N = " + i18n + ";\n"
     )
 
 def build_site_neon(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
