@@ -316,6 +316,56 @@ html.no-boot .boot-overlay { display: none; }
 .lang-btn:hover { background: rgba(0, 240, 255, .12); }
 .lang-current { color: var(--accent-cyan); font-weight: 600; }
 
+
+/* ---- 移动端 ---- */
+.mobile-nav { display: none; }
+@media (max-width: 880px) {
+  body { padding-bottom: 68px; }
+  .hud__inner { padding: 10px 14px; gap: 10px; }
+  .hud-left, .hud-right { gap: 8px; }
+  .hud-chip { padding: 3px 8px; font-size: 10px; }
+  .hud-chip[data-optional] { display: none; }
+  .shell { grid-template-columns: 1fr; padding: 18px 14px 40px; gap: 16px; }
+  .sidebar { position: static; padding: 16px 14px; clip-path: var(--cut-sm); }
+  .sidebar .nav-menu { display: none; }
+  .sidebar .contact-box { margin-top: 12px; padding-top: 10px; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .mission-grid { grid-template-columns: 1fr; }
+  .hero-headline { font-size: 1.65rem; }
+  .section-title { font-size: 1.25rem; gap: 8px; }
+  .section-sub { font-size: .88rem; margin-bottom: 14px; }
+  .panel { padding: 16px; }
+  .telemetry { gap: 8px; }
+  .tel-item { min-width: 96px; padding: 7px 11px; }
+  .tel-item .value { font-size: 1.1rem; }
+  .radar-wrapper { max-height: 260px; }
+  .radar-coords { font-size: 9px; }
+  .stack-table td { display: block; padding: 6px 0; }
+  .stack-table td:first-child { width: auto; padding-bottom: 0; }
+  .tl-row { grid-template-columns: 1fr; gap: 4px; }
+  .milestone-item { grid-template-columns: 1fr; gap: 4px; }
+  .log-links { gap: 6px; }
+  .term-output { max-height: 240px; }
+  .footer-hud { flex-direction: column; gap: 4px; }
+
+  .mobile-nav {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    background: rgba(8, 11, 16, .96); border-top: 1px solid var(--border-titanium);
+    backdrop-filter: blur(14px); padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  .m-nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: transparent; border: none; color: var(--text-muted);
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: .5px;
+    padding: 6px 2px; cursor: pointer; text-decoration: none; clip-path: var(--cut-sm);
+  }
+  .m-nav-btn .mi { font-size: 15px; line-height: 1.1; }
+  .m-nav-btn.active { color: var(--accent-cyan); background: rgba(0, 240, 255, .1); }
+}
+@media (min-width: 881px) {
+  .mobile-nav { display: none !important; }
+}
+
 .footer-hud {
   border-top: 1px solid var(--border-titanium); margin-top: 30px; padding-top: 12px;
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; color: var(--text-dim);
@@ -413,6 +463,7 @@ def shell(
     footer: str,
     site: dict,
     live: list[dict] | None = None,
+    entry: bool = False,
 ) -> str:
     live_items = live or []
     chips = "".join(
@@ -433,7 +484,7 @@ def shell(
   <link rel="stylesheet" href="assets/site.css">
   <script>try {{ if (sessionStorage.getItem('hud_booted') === '1') {{ document.documentElement.className += ' no-boot'; }} }} catch (e) {{}}</script>
 </head>
-<body>
+<body{" data-entry=\"1\"" if entry else ""}>
 <div class="scanlines" aria-hidden="true"></div>
 <canvas id="neuralCanvas" aria-hidden="true"></canvas>
 
@@ -488,11 +539,42 @@ def shell(
   </main>
 </div>
 
+<nav class="mobile-nav" aria-label="移动端导航">
+  {_mobile_nav(nav, page)}
+</nav>
+
 <script src="assets/content.js"></script>
 <script src="assets/site.js" defer></script>
 </body>
 </html>
 """
+
+
+def _mobile_nav(nav: list[dict], current: str) -> str:
+    icons = {
+        "overview": "◈",
+        "missions": "▣",
+        "arsenal": "⚙",
+        "blog": "✎",
+        "terminal": "▷",
+    }
+    short = {
+        "overview": "概览",
+        "missions": "项目",
+        "arsenal": "武器库",
+        "blog": "博客",
+        "terminal": "终端",
+    }
+    items = []
+    for entry in nav:
+        key = entry.get("key", "")
+        active = " active" if entry.get("href") == current else ""
+        items.append(
+            f'<a class="m-nav-btn{active}" href="{esc(entry.get("href"))}">'
+            f'<span class="mi">{icons.get(key, "•")}</span>'
+            f'<span>{esc(short.get(key, entry.get("label", "")))}</span></a>'
+        )
+    return "\n      ".join(items)
 
 
 def _sidebar_stats(site: dict) -> str:

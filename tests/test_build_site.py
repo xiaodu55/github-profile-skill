@@ -549,6 +549,37 @@ class HudFilledContentTests(unittest.TestCase):
         self.assertIn("no-boot", js)
 
 
+class MobileTests(unittest.TestCase):
+    def setUp(self):
+        self.files = build_site.build_site(HUD_INTERACTIONS)
+
+    def test_mobile_bottom_nav_is_rendered_on_every_page(self):
+        for name in ("index.html", "missions.html", "arsenal.html", "blog.html", "terminal.html"):
+            html = self.files[name]
+            self.assertIn('class="mobile-nav"', html)
+            self.assertEqual(html.count("m-nav-btn"), 5)
+
+    def test_mobile_nav_marks_current_page(self):
+        html = self.files["blog.html"]
+        self.assertIn("m-nav-btn active", html)
+
+    def test_mobile_css_collapses_layout(self):
+        css = self.files["assets/site.css"]
+        self.assertIn("@media (max-width: 880px)", css)
+        self.assertIn(".shell { grid-template-columns: 1fr;", css)
+        self.assertIn(".mobile-nav {", css)
+
+    def test_only_entry_page_carries_data_entry(self):
+        self.assertIn('<body data-entry="1">', self.files["index.html"])
+        for name in ("missions.html", "arsenal.html", "blog.html", "terminal.html"):
+            self.assertIn("<body>", self.files[name])
+
+    def test_boot_script_skips_non_entry_pages(self):
+        js = self.files["assets/site.js"]
+        self.assertIn("data-entry", js)
+        self.assertIn("isEntry", js)
+
+
 class ScriptTests(unittest.TestCase):
     def test_js_handles_theme_toggle_and_copy(self):
         js = build_site.build_site(SPEC_DATA)["assets/site.js"]

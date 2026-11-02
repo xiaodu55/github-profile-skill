@@ -3,6 +3,12 @@
   var overlay = document.getElementById('bootOverlay');
   if (!overlay) { return; }
   /* 进站播放一次：站内切页不重播；超过 TTL（默认 30 分钟）重新进站再播 */
+  var isEntry = document.body.getAttribute('data-entry') === '1';
+  if (!isEntry) {
+    overlay.remove();
+    document.documentElement.classList.add('no-boot');
+    return;
+  }
   var TTL = 30 * 60 * 1000;
   var last = 0;
   try { last = Number(sessionStorage.getItem('hud_booted') || 0); } catch (e) { last = 0; }

@@ -1345,6 +1345,7 @@ def build_site_hud(spec: dict) -> dict[str, str]:
             footer=footer,
             site=site,
             live=live,
+            entry=(page["key"] == "overview"),
         )
     files["assets/site.css"] = hud_style.CSS
     files["assets/site.js"] = hud_style.JS
