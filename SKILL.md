@@ -85,7 +85,7 @@ README 之外，很多人的主页会再挂一个个人站点（像 `jasonbuilda
 python3 scripts/build_site.py --spec <site.json> --out <输出目录>
 ```
 
-产出首页、开源贡献、项目、学习笔记四个页面（缺哪段就不生成哪页），外加 `assets/site.css`、`assets/site.js` 和 `404.html`。零依赖、零构建，直接丢进 GitHub Pages 就能上线。
+产出首页、开源贡献、项目、个人博客四个页面（缺哪段就不生成哪页），外加 `assets/site.css`、`assets/site.js` 和 `404.html`。零依赖、零构建，直接丢进 GitHub Pages 就能上线。
 
 4. **上线前必须用浏览器看过**：本地起一个静态服务，逐页截图检查浅色/深色两种模式，确认导航高亮、面包屑、复制按钮、长表格不溢出。
 

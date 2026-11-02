@@ -737,7 +737,7 @@ def render_projects(spec: dict, nav: list[dict]) -> str:
 def render_learning(spec: dict, nav: list[dict]) -> str:
     section = spec.get("learning", {})
     parts = ['<div class="prose">']
-    parts.append(f"<h1>{esc(section.get('title', '学习笔记'))}</h1>")
+    parts.append(f"<h1>{esc(section.get('title', '个人博客'))}</h1>")
     if section.get("lede"):
         parts.append(f'<p class="lede">{esc(section["lede"])}</p>')
     blog = section.get("blog") or {}
@@ -1020,7 +1020,6 @@ def render_learning_neon(spec: dict) -> str:
         if blog.get("url"):
             parts.append(f'<a class="entry-all" href="{esc(blog["url"])}">打开博客 ↗</a>')
         parts.append("</section>")
-    parts.append('<div data-list="projects.items">')
     parts.append('<div data-list="learning.items">')
     for index, item in enumerate(section.get("items", []) or [], start=1):
         url = item.get("url", "")
@@ -1042,13 +1041,13 @@ def render_learning_neon(spec: dict) -> str:
 NEON_PAGES = {
     "open_source": ("open-source.html", "开源贡献", render_open_source_neon),
     "projects": ("projects.html", "项目", render_projects_neon),
-    "learning": ("learning.html", "学习笔记", render_learning_neon),
+    "learning": ("learning.html", "个人博客", render_learning_neon),
 }
 
 PAGES = [
     {"key": "open_source", "file": "open-source.html", "title": "开源贡献", "render": render_open_source},
     {"key": "projects", "file": "projects.html", "title": "项目", "render": render_projects},
-    {"key": "learning", "file": "learning.html", "title": "学习笔记", "render": render_learning},
+    {"key": "learning", "file": "learning.html", "title": "个人博客", "render": render_learning},
 ]
 
 

@@ -258,6 +258,38 @@ class EditableContentTests(unittest.TestCase):
         self.assertIn("open_source.entries", js)
 
 
+class StructureBalanceTests(unittest.TestCase):
+    """回归：包裹层必须闭合，否则 Bento 网格会塌成一列。"""
+
+    def _main_of(self, html: str) -> str:
+        return html.split('<main class="bento-grid">', 1)[1].split("</main>", 1)[0]
+
+    def test_generated_pages_have_balanced_divs(self):
+        files = build_site.build_site(NEON_SPEC)
+        for name in ("index.html", "open-source.html", "projects.html", "learning.html"):
+            main = self._main_of(files[name])
+            self.assertEqual(
+                main.count("<div"),
+                main.count("</div>"),
+                f"{name} 的 div 标签不配对",
+            )
+
+    def test_learning_page_has_single_list_wrapper(self):
+        html = build_site.build_site(NEON_SPEC)["learning.html"]
+        self.assertEqual(html.count('data-list="learning.items"'), 1)
+        self.assertNotIn('data-list="projects.items"', html)
+
+    def test_projects_page_has_single_list_wrapper(self):
+        html = build_site.build_site(NEON_SPEC)["projects.html"]
+        self.assertEqual(html.count('data-list="projects.items"'), 1)
+        self.assertNotIn('data-list="learning.items"', html)
+
+    def test_blog_page_is_named_personal_blog(self):
+        files = build_site.build_site(NEON_SPEC)
+        self.assertIn("个人博客", files["learning.html"])
+        self.assertIn("个人博客", files["index.html"])
+
+
 class ScriptTests(unittest.TestCase):
     def test_js_handles_theme_toggle_and_copy(self):
         js = build_site.build_site(SPEC_DATA)["assets/site.js"]
