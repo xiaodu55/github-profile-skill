@@ -132,6 +132,7 @@ header {
 
 /* Bento 网格 */
 .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.25rem; }
+.bento-grid > [data-list] { display: contents; }
 
 .card {
   background: var(--card-bg);
@@ -228,6 +229,7 @@ header {
 }
 
 .card-highlights { grid-column: span 5; display: flex; flex-direction: column; gap: 0.9rem; }
+.card-highlights .highlight-list { display: flex; flex-direction: column; gap: 0.9rem; }
 .highlight-item {
   display: flex; align-items: flex-start; gap: 0.75rem;
   padding: 0.6rem; border-radius: 12px;
@@ -326,7 +328,7 @@ footer {
 }
 """
 
-JS = """// 霓虹 Bento 版式脚本：复制提示
+JS = """// 霓虹 Bento 版式脚本：复制提示 + 读取 content.js 覆盖页面内容
 function copyText(text, message) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(function () {
@@ -338,6 +340,130 @@ function copyText(text, message) {
     });
   }
 }
+
+/* ---- 内容覆盖：content.js 里的 SITE_CONTENT 会覆盖页面上 data-bind / data-list 标记的内容 ---- */
+(function () {
+  var data = window.SITE_CONTENT;
+  if (!data) { return; }
+
+  function esc(value) {
+    return String(value === undefined || value === null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function pick(path) {
+    return path.split('.').reduce(function (acc, key) {
+      return (acc && typeof acc === 'object') ? acc[key] : undefined;
+    }, data);
+  }
+
+  function setText(root, path) {
+    root.querySelectorAll('[data-bind]').forEach(function (node) {
+      var value = pick(node.getAttribute('data-bind'));
+      if (typeof value === 'string') { node.textContent = value; }
+    });
+  }
+
+  var RENDERERS = {
+    'home.hero.actions': function (list) {
+      return list.map(function (a) {
+        var cls = a.primary ? 'btn btn-primary' : 'btn btn-ghost';
+        return '<a href="' + esc(a.url || '#') + '" class="' + cls + '"><span>' + esc(a.label) + '</span></a>';
+      }).join('');
+    },
+    'home.meta.chips': function (list) {
+      return list.map(function (c) { return '<span class="chip">' + esc(c) + '</span>'; }).join('');
+    },
+    'home.focus.pills': function (list) {
+      return list.map(function (p) { return '<span class="tech-pill"># ' + esc(p) + '</span>'; }).join('');
+    },
+    'home.highlights.items': function (list) {
+      return list.map(function (h) {
+        return '<div class="highlight-item"><div class="highlight-icon">' + esc(h.icon || '•') + '</div>' +
+          '<div class="highlight-desc"><strong>' + esc(h.title) + '</strong><br>' + esc(h.desc) + '</div></div>';
+      }).join('');
+    },
+    'home.contact.items': function (list) {
+      return list.map(function (c) {
+        var icon = c.icon || '', label = c.label || '', value = c.value || '';
+        var text = [icon, label, value].filter(Boolean).join(' ');
+        if (c.copy) {
+          return '<button class="contact-item" type="button" onclick="copyText(\'' + esc(value) + '\', \'' + esc(text) + ' 已复制\')">' +
+            '<span>' + esc(text) + '</span></button>';
+        }
+        if (c.href) {
+          return '<a class="contact-item" href="' + esc(c.href) + '"><span>' + esc(text) + '</span></a>';
+        }
+        return '<span class="contact-item"><span>' + esc(text) + '</span></span>';
+      }).join('');
+    },
+    'open_source.entries': function (list) {
+      return list.map(function (entry, index) {
+        var prs = (entry.prs || []).map(function (pr) {
+          return '<li><a href="' + esc(pr.url || '') + '"><span class="pr-no">#' + esc(pr.number) + '</span>' +
+            '<span>' + esc(pr.title) + ' ↗</span></a></li>';
+        }).join('');
+        return '<section class="card card-span-12">' +
+          '<div class="entry-index">' + String(index + 1).padStart(2, '0') + '</div>' +
+          '<div class="entry-title"><h3><a href="' + esc(entry.url || ('https://github.com/' + entry.repo)) + '">' + esc(entry.repo) + '</a></h3>' +
+          (entry.role ? '<span class="entry-role">' + esc(entry.role) + '</span>' : '') + '</div>' +
+          (entry.summary ? '<p class="entry-summary">' + esc(entry.summary) + '</p>' : '') +
+          (prs ? '<div class="entry-label">代表 PR</div><ul class="entry-list">' + prs + '</ul>' : '') +
+          (entry.all_link ? '<a class="entry-all" href="' + esc(entry.all_link) + '">全部记录 ↗</a>' : '') +
+          '</section>';
+      }).join('');
+    },
+    'open_source.repo_index': function (list) {
+      return '<ul class="plain-list">' + list.map(function (row) {
+        return '<li><a href="' + esc(row.url || '') + '">' + esc(row.repo) + ' ↗</a></li>';
+      }).join('') + '</ul>';
+    },
+    'projects.items': function (list) {
+      return list.map(function (item, index) {
+        var name = item.url
+          ? '<a href="' + esc(item.url) + '">' + esc(item.name) + '</a>'
+          : esc(item.name);
+        var tags = (item.tags || []).map(function (t) {
+          return '<span class="tech-pill"># ' + esc(t) + '</span>';
+        }).join('');
+        var points = (item.points || []).map(function (p) {
+          return '<p class="entry-summary">· ' + esc(p) + '</p>';
+        }).join('');
+        return '<section class="card card-span-6">' +
+          '<div class="entry-index">' + String(index + 1).padStart(2, '0') + '</div>' +
+          '<div class="entry-title"><h3>' + name + '</h3></div>' +
+          (tags ? '<div class="badge-cloud" style="margin-bottom:0.9rem;">' + tags + '</div>' : '') +
+          (item.summary ? '<p class="entry-summary">' + esc(item.summary) + '</p>' : '') + points +
+          '</section>';
+      }).join('');
+    },
+    'learning.items': function (list) {
+      return list.map(function (item, index) {
+        var title = item.url
+          ? '<a href="' + esc(item.url) + '">' + esc(item.title) + '</a>'
+          : esc(item.title);
+        return '<section class="card card-span-6">' +
+          '<div class="entry-index">' + String(index + 1).padStart(2, '0') + '</div>' +
+          '<div class="entry-title"><h3>' + title + '</h3></div>' +
+          (item.date ? '<div class="entry-label">' + esc(item.date) + '</div>' : '') +
+          (item.summary ? '<p class="entrysummary">' + esc(item.summary) + '</p>' : '') +
+          '</section>';
+      }).join('');
+    }
+  };
+
+  function applyLists() {
+    document.querySelectorAll('[data-list]').forEach(function (node) {
+      var path = node.getAttribute('data-list');
+      var list = pick(path);
+      var renderer = RENDERERS[path];
+      if (Array.isArray(list) && renderer) { node.innerHTML = renderer(list); }
+    });
+  }
+
+  setText(document, 'root');
+  applyLists();
+})();
 """
 
 
@@ -400,6 +526,7 @@ def shell(
   </div>
 
   <div id="toast" class="toast">已复制到剪贴板</div>
+  <script src="assets/content.js"></script>
   <script src="assets/site.js" defer></script>
 </body>
 </html>

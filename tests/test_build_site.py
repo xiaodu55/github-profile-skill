@@ -221,6 +221,43 @@ class NeonBentoTests(unittest.TestCase):
         self.assertIn('href="index.html#contact"', self.files["projects.html"])
 
 
+class EditableContentTests(unittest.TestCase):
+    def setUp(self):
+        self.files = build_site.build_site(NEON_SPEC)
+
+    def test_content_js_is_emitted_with_editable_data(self):
+        content = self.files["assets/content.js"]
+        self.assertIn("window.SITE_CONTENT", content)
+        self.assertIn("home", content)
+        self.assertIn("open_source", content)
+        self.assertIn("projects", content)
+        self.assertIn("learning", content)
+
+    def test_pages_load_content_js_before_site_js(self):
+        html = self.files["index.html"]
+        self.assertLess(html.index("assets/content.js"), html.index("assets/site.js"))
+
+    def test_editable_nodes_carry_data_bind(self):
+        html = self.files["index.html"]
+        for path in ("home.hero.title", "home.hero.bio", "home.meta.name", "home.focus.title", "home.contact.title"):
+            self.assertIn(f'data-bind="{path}"', html)
+
+    def test_lists_carry_data_list(self):
+        html = self.files["index.html"]
+        for path in ("home.hero.actions", "home.meta.chips", "home.focus.pills", "home.contact.items"):
+            self.assertIn(f'data-list="{path}"', html)
+        self.assertIn('data-list="open_source.entries"', self.files["open-source.html"])
+        self.assertIn('data-list="projects.items"', self.files["projects.html"])
+        self.assertIn('data-list="learning.items"', self.files["learning.html"])
+
+    def test_runtime_js_renders_lists_and_binds(self):
+        js = self.files["assets/site.js"]
+        self.assertIn("SITE_CONTENT", js)
+        self.assertIn("data-bind", js)
+        self.assertIn("data-list", js)
+        self.assertIn("open_source.entries", js)
+
+
 class ScriptTests(unittest.TestCase):
     def test_js_handles_theme_toggle_and_copy(self):
         js = build_site.build_site(SPEC_DATA)["assets/site.js"]

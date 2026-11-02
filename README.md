@@ -40,7 +40,7 @@ github-profile-skill/
 │   └── check_profile_readme.py          # README 静态自检
 ├── examples/
 │   └── README.data-narrative.example.md # 填好的样例（虚构数据），可直接看成品
-└── tests/                               # 73 条离线单元测试
+└── tests/                               # 78 条离线单元测试
 ```
 
 ## 安装
@@ -75,7 +75,7 @@ cp -r github-profile-skill ~/.claude/skills/github-profile
 2. **采集个人信息（必问）**：`scripts/build_intake.py` 生成问卷——公开数据能确认的预填让用户确认，定位句/"做了什么"/专注方向/联系方式等必须用户给，一次问全；
 3. **选型**：按范式选骨架，按可靠性选组件（Tier A 静态优先，Tier B 动态必须配降级方案）；
 4. **渲染**：把问卷答案写进 spec JSON → `scripts/render_profile_readme.py` 出初稿 → 人工润色；
-5. **个人网站**（用户要才有）：`scripts/build_site.py` 生成静态站点；**风格预设由用户选**，上线前用浏览器逐页检查浅色/深色两套；
+5. **个人网站**（用户要才有）：`scripts/build_site.py` 生成静态站点；**风格预设由用户选**，上线前用浏览器逐页检查；站点额外产出 `assets/content.js`，用户以后只改这一个文件就能更新内容，不必重新生成；
 6. **自检**：`scripts/check_profile_readme.py` 零错误才交付；
 7. **交付**：给出 README、"需要你自己做的事"清单、数据口径说明。
 
@@ -116,7 +116,7 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 python3 -m unittest discover -s tests -t . -v
 ```
 
-73 条用例全部通过（自检脚本 19 条、取数脚本 4 条、渲染器 15 条、问卷 8 条、站点 27 条），全部离线运行；CI 在 Ubuntu 与 Windows 上各跑一遍，并额外校验样例 README 仍然零错误。
+78 条用例全部通过（自检脚本 19 条、取数脚本 4 条、渲染器 15 条、问卷 8 条、站点 32 条），全部离线运行；CI 在 Ubuntu 与 Windows 上各跑一遍，并额外校验样例 README 仍然零错误。
 
 ## 参考来源
 

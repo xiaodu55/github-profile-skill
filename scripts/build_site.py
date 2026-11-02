@@ -845,16 +845,16 @@ def render_home_neon(spec: dict) -> str:
 
     parts = ['<section class="card card-hero">', "<div>"]
     parts.append(
-        f'<div class="hero-tagline"><span class="status-dot"></span><span>{esc(tagline)}</span></div>'
+        f'<div class="hero-tagline"><span class="status-dot"></span><span data-bind="home.hero.tagline">{esc(tagline)}</span></div>'
     )
     parts.append(
-        f'<h1 class="hero-title">{esc(title)}'
-        + (f'<span class="hl">{esc(highlight)}</span>' if highlight else "")
+        f'<h1 class="hero-title"><span data-bind="home.hero.title">{esc(title)}</span>'
+        + (f'<span class="hl" data-bind="home.hero.highlight">{esc(highlight)}</span>' if highlight else "")
         + "</h1>"
     )
-    parts.append(f'<p class="hero-bio">{esc(bio)}</p>')
+    parts.append(f'<p class="hero-bio" data-bind="home.hero.bio">{esc(bio)}</p>')
     parts.append("</div>")
-    parts.append('<div class="hero-actions">')
+    parts.append('<div class="hero-actions" data-list="home.hero.actions">')
     for action in actions:
         cls = "btn btn-primary" if action.get("primary") else "btn btn-ghost"
         parts.append(f'<a href="{esc(action.get("url", "#"))}" class="{cls}"><span>{esc(action.get("label", ""))}</span></a>')
@@ -865,29 +865,30 @@ def render_home_neon(spec: dict) -> str:
         f'<div class="avatar-wrapper"><div class="avatar">{esc(meta.get("initials") or site.get("initials", "GH"))}</div></div>'
     )
     parts.append(
-        f'<div><h2 class="meta-name">{esc(meta.get("name") or site.get("brand", ""))}</h2>'
-        f'<p class="meta-handle">{esc(meta.get("handle") or site.get("handle", ""))}</p></div>'
+        f'<div><h2 class="meta-name" data-bind="home.meta.name">{esc(meta.get("name") or site.get("brand", ""))}</h2>'
+        f'<p class="meta-handle" data-bind="home.meta.handle">{esc(meta.get("handle") or site.get("handle", ""))}</p></div>'
     )
-    parts.append('<div class="meta-chips">')
+    parts.append('<div class="meta-chips" data-list="home.meta.chips">')
     for chip in chips:
         parts.append(f'<span class="chip">{esc(chip)}</span>')
     parts.append("</div></aside>")
 
     parts.append('<section class="card card-focus">')
-    parts.append(f'<h2 class="card-title">{esc(focus.get("title", "核心工程方向"))}</h2>')
+    parts.append(f'<h2 class="card-title" data-bind="home.focus.title">{esc(focus.get("title", "核心工程方向"))}</h2>')
     focus_text = focus.get("text") or home.get("focus", "")
     focus_highlight = focus.get("highlight", "")
     if focus_highlight and focus_highlight in focus_text:
-        parts.append(f'<p class="focus-text">{esc(focus_text.replace(focus_highlight, ""))}<span class="focus-highlight">{esc(focus_highlight)}</span></p>')
+        parts.append(f'<p class="focus-text" data-bind="home.focus.text">{esc(focus_text.replace(focus_highlight, ""))}<span class="focus-highlight" data-bind="home.focus.highlight">{esc(focus_highlight)}</span></p>')
     else:
-        parts.append(f'<p class="focus-text">{esc(focus_text)}</p>')
-    parts.append('<div class="badge-cloud">')
+        parts.append(f'<p class="focus-text" data-bind="home.focus.text">{esc(focus_text)}</p>')
+    parts.append('<div class="badge-cloud" data-list="home.focus.pills">')
     for pill in pills:
         parts.append(f'<span class="tech-pill"># {esc(pill)}</span>')
     parts.append("</div></section>")
 
     parts.append('<section class="card card-highlights">')
-    parts.append(f'<h2 class="card-title">{esc(highlights.get("title", "数据与社区"))}</h2>')
+    parts.append(f'<h2 class="card-title" data-bind="home.highlights.title">{esc(highlights.get("title", "数据与社区"))}</h2>')
+    parts.append('<div class="highlight-list" data-list="home.highlights.items">')
     for item in highlight_items:
         parts.append('<div class="highlight-item">')
         parts.append(f'<div class="highlight-icon">{esc(item.get("icon", "•"))}</div>')
@@ -895,14 +896,15 @@ def render_home_neon(spec: dict) -> str:
             f'<div class="highlight-desc"><strong>{esc(item.get("title", ""))}</strong><br>{esc(item.get("desc", ""))}</div>'
         )
         parts.append("</div>")
+    parts.append("</div>")
     parts.append("</section>")
 
     parts.append('<section class="card card-contact" id="contact">')
     parts.append(
-        f'<div class="contact-cta"><h3>{esc(contact.get("title", "随时碰个头！"))}</h3>'
-        f'<p>{esc(contact.get("text", ""))}</p></div>'
+        f'<div class="contact-cta"><h3 data-bind="home.contact.title">{esc(contact.get("title", "随时碰个头！"))}</h3>'
+        f'<p data-bind="home.contact.text">{esc(contact.get("text", ""))}</p></div>'
     )
-    parts.append('<div class="contact-links">')
+    parts.append('<div class="contact-links" data-list="home.contact.items">')
     for item in contact_items:
         text = esc(item.get("text", ""))
         value = esc(item.get("value", ""))
@@ -932,6 +934,7 @@ def render_open_source_neon(spec: dict) -> str:
     section = spec.get("open_source", {}) or {}
     parts = [_neon_page_head(section.get("title", "开源贡献"), section.get("lede", ""))]
     entries = section.get("entries", []) or []
+    parts.append('<div data-list="open_source.entries">')
     for index, entry in enumerate(entries, start=1):
         repo = entry.get("repo", "")
         url = entry.get("url") or f"https://github.com/{repo}"
@@ -957,6 +960,7 @@ def render_open_source_neon(spec: dict) -> str:
         if entry.get("all_link"):
             parts.append(f'<a class="entry-all" href="{esc(entry["all_link"])}">全部记录 ↗</a>')
         parts.append("</section>")
+    parts.append("</div>")
 
     index_rows = section.get("repo_index", []) or []
     if index_rows:
@@ -964,7 +968,7 @@ def render_open_source_neon(spec: dict) -> str:
         parts.append(f'<h2 class="card-title">{esc(section.get("index_title", "参与过的仓库"))}</h2>')
         if section.get("index_intro"):
             parts.append(f'<p class="entry-summary">{esc(section["index_intro"])}</p>')
-        parts.append('<ul class="plain-list">')
+        parts.append('<ul class="plain-list" data-list="open_source.repo_index">')
         for row in index_rows:
             parts.append(f'<li><a href="{esc(row.get("url", ""))}">{esc(row.get("repo", ""))} ↗</a></li>')
         parts.append("</ul>")
@@ -977,6 +981,7 @@ def render_open_source_neon(spec: dict) -> str:
 def render_projects_neon(spec: dict) -> str:
     section = spec.get("projects", {}) or {}
     parts = [_neon_page_head(section.get("title", "项目"), section.get("lede", ""))]
+    parts.append('<div data-list="projects.items">')
     for index, item in enumerate(section.get("items", []) or [], start=1):
         url = item.get("url", "")
         parts.append('<section class="card card-span-6">')
@@ -994,6 +999,7 @@ def render_projects_neon(spec: dict) -> str:
         for point in item.get("points", []) or []:
             parts.append(f'<p class="entry-summary">· {esc(point)}</p>')
         parts.append("</section>")
+    parts.append("</div>")
     if section.get("note"):
         parts.append(f'<p class="data-note">{esc(section["note"])}</p>')
     return "\n".join(parts)
@@ -1014,6 +1020,8 @@ def render_learning_neon(spec: dict) -> str:
         if blog.get("url"):
             parts.append(f'<a class="entry-all" href="{esc(blog["url"])}">打开博客 ↗</a>')
         parts.append("</section>")
+    parts.append('<div data-list="projects.items">')
+    parts.append('<div data-list="learning.items">')
     for index, item in enumerate(section.get("items", []) or [], start=1):
         url = item.get("url", "")
         parts.append('<section class="card card-span-6">')
@@ -1025,6 +1033,7 @@ def render_learning_neon(spec: dict) -> str:
         if item.get("summary"):
             parts.append(f'<p class="entry-summary">{esc(item["summary"])}</p>')
         parts.append("</section>")
+    parts.append("</div>")
     if section.get("note"):
         parts.append(f'<p class="data-note">{esc(section["note"])}</p>')
     return "\n".join(parts)
@@ -1128,6 +1137,35 @@ def build_site(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
 
 
 
+
+def build_content_js(spec: dict) -> str:
+    """生成 content.js：站点所有可编辑内容的单一入口，用户改这一个文件即可。"""
+    site = spec.get("site", {}) or {}
+    home = spec.get("home", {}) or {}
+    payload = {
+        "site": {
+            "brand": site.get("brand", ""),
+            "handle": site.get("handle", ""),
+            "initials": site.get("initials", ""),
+        },
+        "home": {
+            "hero": home.get("hero", {}) or {},
+            "meta": home.get("meta", {}) or {},
+            "focus": home.get("focus", {}) or {},
+            "highlights": home.get("highlights", {}) or {},
+            "contact": home.get("contact", {}) or {},
+        },
+        "open_source": spec.get("open_source", {}) or {},
+        "projects": spec.get("projects", {}) or {},
+        "learning": spec.get("learning", {}) or {},
+    }
+    body = json.dumps(payload, ensure_ascii=False, indent=2)
+    return (
+        "// 站点内容文件：改这里就能改网站，不用重新生成。\n"
+        "// 字段含义见仓库 README 的「自己编辑站点内容」一节。\n"
+        "window.SITE_CONTENT = " + body + ";\n"
+    )
+
 def build_site_neon(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
     """霓虹 Bento 版式的站点生成。"""
     site = spec.get("site", {}) or {}
@@ -1174,6 +1212,7 @@ def build_site_neon(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
         )
     files["assets/site.css"] = neon_style.CSS
     files["assets/site.js"] = neon_style.JS
+    files["assets/content.js"] = build_content_js(spec)
     files[".nojekyll"] = ""
     files["404.html"] = neon_style.shell(
         page="404.html",

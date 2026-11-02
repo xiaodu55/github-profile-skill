@@ -130,8 +130,8 @@ def check_images(lines: list[str]) -> list[Issue]:
             pixel = PIXEL_WIDTH_RE.search(tag)
             if pixel:
                 pixel_widths.setdefault(int(pixel.group(1)), number)
-        if len(tags) > 4:
-            issues.append(Issue("warn", number, f"单行 {len(tags)} 张图片，视觉密度过高"))
+        if len(tags) > 12:
+            issues.append(Issue("warn", number, f"单行 {len(tags)} 张图片，视觉密度过高（技术栈图标建议控制在 12 个以内）"))
         if len(SHIELDS_RE.findall(line)) > 6:
             issues.append(Issue("warn", number, "单行 shields 徽章超过 6 个，建议只保留联系方式类徽章"))
     if len(pixel_widths) > 1:
