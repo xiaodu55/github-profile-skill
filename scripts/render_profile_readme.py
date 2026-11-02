@@ -370,7 +370,15 @@ def render_hero(spec: dict) -> list[str]:
     profile = spec.get("profile", {}) or {}
     username = spec.get("username", "")
     title = profile.get("title") or f"Hi, I'm {username} 👋"
-    lines = ["<div align=\"center\">", "", f"# {title}", ""]
+    lines: list[str] = []
+    if profile.get("hero_image"):
+        lines.append('<div align="center">')
+        lines.append(
+            f'<img src="{profile["hero_image"]}" alt="{profile.get("hero_image_alt", "banner")}" width="100%">'
+        )
+        lines.append("</div>")
+        lines.append("")
+    lines += ["<div align=\"center\">", "", f"# {title}", ""]
     if profile.get("subtitle"):
         lines.append(f"**{profile['subtitle']}**")
         lines.append("")
