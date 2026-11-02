@@ -96,6 +96,16 @@ class ThemeTests(unittest.TestCase):
         self.assertNotEqual(neutral, runoob)
         self.assertIn("#2f69d4", runoob)
 
+    def test_body_carries_preset_class(self):
+        for preset in ("hybrid", "shadcn-neutral", "runoob-classic"):
+            files = build_site.build_site({**SPEC_DATA, "theme": {"preset": preset}})
+            self.assertIn(f'class="preset-{preset}"', files["index.html"])
+
+    def test_presets_differ_visually(self):
+        css = build_site.build_site(SPEC_DATA)["assets/site.css"]
+        for preset in ("shadcn-neutral", "runoob-classic"):
+            self.assertIn(f"body.preset-{preset}", css)
+
     def test_css_has_no_unreplaced_placeholders(self):
         css = build_site.build_site(SPEC_DATA)["assets/site.css"]
         self.assertNotIn("@PRIMARY@", css)

@@ -386,6 +386,25 @@ main {
   justify-content: space-between;
 }
 
+/* ---- 风格预设差异：让三种风格真的看起来不同 ---- */
+body.preset-shadcn-neutral { --radius: 0.75rem; }
+body.preset-shadcn-neutral .entry,
+body.preset-shadcn-neutral .stats li { box-shadow: 0 1px 2px rgb(0 0 0 / 5%); }
+body.preset-shadcn-neutral .prose h2 { border-bottom: none; padding-bottom: 0; }
+body.preset-shadcn-neutral .prose a { text-decoration: underline; text-underline-offset: 3px; }
+body.preset-shadcn-neutral .stats li { background: color-mix(in oklch, var(--card) 82%, var(--muted)); }
+body.preset-shadcn-neutral .site-nav a[aria-current="page"] { background: var(--primary); color: var(--primary-foreground); }
+
+body.preset-runoob-classic { font-size: 15px; line-height: 1.7; }
+body.preset-runoob-classic .site-header { position: static; backdrop-filter: none; }
+body.preset-runoob-classic .prose h1 { font-size: 1.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+body.preset-runoob-classic .prose h2 { font-size: 1.15rem; }
+body.preset-runoob-classic .entry,
+body.preset-runoob-classic .stats li { border-radius: 0; }
+body.preset-runoob-classic .prose a { text-decoration: underline; }
+body.preset-runoob-classic .entry__index { display: none; }
+body.preset-runoob-classic .tag { border-radius: 0; }
+
 @media (max-width: 640px) {
   .site-nav { margin-left: 0; width: 100%; }
   .prose h1 { font-size: 1.6rem; }
@@ -462,6 +481,7 @@ def _shell(
     body: str,
     footer: str,
     base: str,
+    body_class: str = "",
     breadcrumb: list[tuple[str, str]] | None = None,
     pager: list[tuple[str, str]] | None = None,
 ) -> str:
@@ -494,7 +514,7 @@ def _shell(
 <meta name="color-scheme" content="light dark">
 <link rel="stylesheet" href="assets/site.css">
 </head>
-<body>
+<body class="{body_class}">
 <a class="skip-link" href="#main">跳到主要内容</a>
 <header class="site-header">
   <div class="site-header__inner">
@@ -696,6 +716,8 @@ def build_site(spec: dict) -> dict[str, str]:
         "description": site.get("description", ""),
     }
     nav = build_nav(spec)
+    preset = spec.get("theme", {}).get("preset", "hybrid")
+    body_class = f"preset-{preset}"
     theme = dict(THEMES[spec.get("theme", {}).get("preset", "hybrid")])
     theme.update({key: value for key, value in spec.get("theme", {}).items() if key in theme})
     footer = spec.get("footer", {})
@@ -709,6 +731,7 @@ def build_site(spec: dict) -> dict[str, str]:
         body=render_home(spec, nav),
         footer=footer,
         base=base,
+        body_class=body_class,
     )
 
     for page in PAGES:
@@ -723,6 +746,7 @@ def build_site(spec: dict) -> dict[str, str]:
             body=page["render"](spec, nav),
             footer=footer,
             base=base,
+            body_class=body_class,
             breadcrumb=[("首页", "index.html"), (page["title"], None)],
         )
 
@@ -736,6 +760,7 @@ def build_site(spec: dict) -> dict[str, str]:
         body='<div class="prose"><h1>404</h1><p>这个页面不存在。<a href="index.html">回到首页</a></p></div>',
         footer=footer,
         base=base,
+        body_class=body_class,
     )
     return files
 
