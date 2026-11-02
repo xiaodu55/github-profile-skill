@@ -2,14 +2,19 @@
 (function () {
   var overlay = document.getElementById('bootOverlay');
   if (!overlay) { return; }
-  var booted = false;
-  try { booted = sessionStorage.getItem('hud_booted') === '1'; } catch (e) { booted = false; }
-  if (booted) {
+  /* 进站播放一次：站内切页不重播；超过 TTL（默认 30 分钟）重新进站再播 */
+  var TTL = 30 * 60 * 1000;
+  var last = 0;
+  try { last = Number(sessionStorage.getItem('hud_booted') || 0); } catch (e) { last = 0; }
+  var fresh = !last || (Date.now() - last) > TTL;
+  var forced = window.location.hash === '#reboot';
+  if (!fresh && !forced) {
     overlay.remove();
     document.documentElement.classList.add('no-boot');
     return;
   }
-  try { sessionStorage.setItem('hud_booted', '1'); } catch (e) { /* ignore */ }
+  try { sessionStorage.setItem('hud_booted', String(Date.now())); } catch (e) { /* ignore */ }
+  if (forced) { try { sessionStorage.removeItem('hud_booted'); } catch (e) { /* ignore */ } }
 
   var lines = (window.SITE_CONTENT && window.SITE_CONTENT.boot_lines) || [
     '> loading operator profile ... ok',
@@ -28,6 +33,19 @@
       setTimeout(function () { if (overlay.parentNode) { overlay.parentNode.removeChild(overlay); } }, 600);
     }
   }, 320);
+})();
+
+/* 点品牌可重播启动序列 */
+(function () {
+  var brand = document.querySelector('.brand-title');
+  if (!brand) { return; }
+  brand.style.cursor = 'pointer';
+  brand.title = '点击重播启动序列';
+  brand.addEventListener('click', function () {
+    try { sessionStorage.removeItem('hud_booted'); } catch (e) { /* ignore */ }
+    window.location.href = window.location.pathname + '#reboot';
+    window.location.reload();
+  });
 })();
 
 /* ---------- 音频引擎（WebAudio 合成，无音频文件） ---------- */

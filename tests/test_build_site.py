@@ -505,6 +505,36 @@ class HudFilledContentTests(unittest.TestCase):
         self.assertIn('id="soundIcon"', html)
         self.assertIn('id="soundStatusText"', html)
 
+    def test_boot_has_ttl_and_replay_affordance(self):
+        js = self.files["assets/site.js"]
+        self.assertIn("hud_booted", js)
+        self.assertIn("TTL", js)
+        self.assertIn("#reboot", js)
+
+    def test_hero_renders_operator_rows(self):
+        spec = {
+            **HUD_INTERACTIONS,
+            "home": {
+                **HUD_INTERACTIONS["home"],
+                "operator": {"OPERATOR": "杜凯峰", "STATUS": "OPEN TO WORK"},
+            },
+        }
+        html = build_site.build_site(spec)["index.html"]
+        self.assertIn("杜凯峰", html)
+        self.assertIn("OPEN TO WORK", html)
+
+    def test_systems_panel_shows_metrics(self):
+        spec = {
+            **HUD_INTERACTIONS,
+            "projects": {
+                **HUD_INTERACTIONS["projects"],
+                "items": [{"name": "CoreCoder", "code": "TS", "summary": "s", "metrics": ["4013 TESTS"], "tags": ["t"]}],
+            },
+        }
+        html = build_site.build_site(spec)["index.html"]
+        self.assertIn("4013 TESTS", html)
+        self.assertIn("mission-tag", html)
+
     def test_boot_runs_once_per_session(self):
         js = self.files["assets/site.js"]
         self.assertIn("sessionStorage", js)

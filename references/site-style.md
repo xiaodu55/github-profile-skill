@@ -72,6 +72,7 @@
 | `site.contact[]` | 侧栏联系方式（有 `href` 是链接，否则可复制） |
 | `home.hero.paragraphs[]` | 概览正文（多段） |
 | `home.live[]` | 概览指标条 + 顶栏实时数据（同一个 key 两处都显示） |
+| `home.operator{}` | 首屏的操作者档案行（`OPERATOR` / `ROLE` / `BASE` / `STATUS` 等键值对） |
 | `home.signals[]` | 雷达卡下方的信号行（`key` + `text`） |
 | `home.milestones[]` | 近期里程碑（`when` / `what` / `why`） |
 | `projects.items[].code` / `.metrics[]` | 项目卡的编号标签与指标胶囊 |
@@ -86,7 +87,7 @@
 | `boot_lines[]` | 启动序列逐行文案（可用 `<b>` 强调） |
 | `i18n.zh` / `i18n.en` | 双语词典，键是 `data-bind` 路径（如 `home.hero.title`、`nav.overview.label`） |
 
-HUD 版式带的交互：**启动序列**（按 `boot_lines` 逐行打印 + 进度条，完成后淡出移除）——**每个标签页会话只播一次**：`sessionStorage` 里记 `hud_booted`，站内切页不再重播；同时 `<head>` 里有一段同步脚本直接给 `<html>` 加 `no-boot` 类，切页不会闪黑屏、**神经网络背景 canvas**（粒子连线）、**雷达扫描 canvas**（带方位角读数）、**双语切换**（顶栏 `ZH / EN` 按钮，按 `i18n` 词典替换 `data-bind` 文本）、**可输入终端**（回车执行 `terminal.commands`，`clear` 清屏）、**音频引擎**（WebAudio 合成的低频环境垫 + 悬停/点击短音，顶栏 `🔊 ON/OFF` 可关；浏览器自动播放策略要求首次交互后才真正出声，切页点击会先响一声再跳转）。
+HUD 版式带的交互：**启动序列**（按 `boot_lines` 逐行打印 + 进度条，完成后淡出移除）——**进站播一次、站内切页不重播**：`sessionStorage` 里记 `hud_booted` 与时间戳，30 分钟内再进站也不再播（站内切页当然不播）；想再看一次，点侧栏品牌名会带 `#reboot` 强制重播；同时 `<head>` 里有一段同步脚本直接给 `<html>` 加 `no-boot` 类，切页不会闪黑屏、**神经网络背景 canvas**（粒子连线）、**雷达扫描 canvas**（带方位角读数）、**双语切换**（顶栏 `ZH / EN` 按钮，按 `i18n` 词典替换 `data-bind` 文本）、**可输入终端**（回车执行 `terminal.commands`，`clear` 清屏）、**音频引擎**（WebAudio 合成的低频环境垫 + 悬停/点击短音，顶栏 `🔊 ON/OFF` 可关；浏览器自动播放策略要求首次交互后才真正出声，切页点击会先响一声再跳转）。
 
 ### 霓虹 Bento 的 spec 字段
 

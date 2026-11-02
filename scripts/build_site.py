@@ -1091,6 +1091,12 @@ def render_overview_hud(spec: dict) -> str:
     if hero.get("highlight"):
         headline += f'<br><span class="hl" data-bind="home.hero.highlight">{esc(hero["highlight"])}</span>'
     parts.append(f'<h1 class="hero-headline">{headline}</h1>')
+    operator = home.get("operator", {}) or {}
+    if operator:
+        rows = []
+        for label, value in operator.items():
+            rows.append(f'<div class="stat-row"><span>{esc(label)}</span><span class="stat-val">{esc(value)}</span></div>')
+        parts.append(f'<div class="sidebar-stats" style="margin-top:16px;">{"".join(rows)}</div>')
     for index, paragraph in enumerate(hero.get("paragraphs", []) or ([hero["bio"]] if hero.get("bio") else [])):
         parts.append(f'<p class="hero-manifesto" data-bind="home.hero.paragraph.{index}">{esc(paragraph)}</p>')
     live = home.get("live", []) or []
@@ -1131,11 +1137,16 @@ def render_overview_hud(spec: dict) -> str:
         parts.append('<section class="panel">')
         parts.append('<div class="card-hud-bar"><span>系统清单 / SYSTEMS</span><span class="tag">3</span></div>')
         for index, item in enumerate(systems, start=1):
+            tags = "".join(f'<span class="mission-tag">{esc(tag)}</span>' for tag in item.get("tags", []) or [])
+            metrics = "".join(f'<span class="metric-chip">{esc(m)}</span>' for m in item.get("metrics", []) or [])
             parts.append(
                 f'<div class="tl-row" style="grid-template-columns:96px 1fr;">'
                 f'<div class="tl-period">{esc(item.get("code") or f"0{index}")}</div>'
                 f'<div><div class="tl-title">{esc(item.get("name", ""))}</div>'
-                f'<div class="tl-body">{esc(item.get("summary", ""))[:110]}</div></div></div>'
+                + (f'<div class="mission-tags" style="margin:6px 0;">{tags}</div>' if tags else "")
+                + f'<div class="tl-body">{esc(item.get("summary", ""))}</div>'
+                + (f'<div class="mission-metrics">{metrics}</div>' if metrics else "")
+                + "</div></div>"
             )
         parts.append("</section>")
 
