@@ -474,7 +474,7 @@ HUD_FILLED = {
         "stats": [["已发布", "6"]],
         "platforms": "知乎 / 掘金 / 公众号",
         "cta": {"text": "订阅", "url": "https://example.org"},
-        "items": [{"title": "文章", "url": "https://example.org/p", "date": "2026-11", "likes": 24, "tags": ["Agent"]}],
+        "items": [{"title": "文章", "url": "https://example.org/p", "date": "2026-11", "views": 24, "tags": ["Agent"]}],
     },
 }
 
@@ -494,8 +494,8 @@ class HudFilledContentTests(unittest.TestCase):
         html = self.files["blog.html"]
         self.assertIn("blog-stat", html)
         self.assertIn("知乎 / 掘金 / 公众号", html)
-        self.assertIn("like-chip", html)
-        self.assertIn("♥ 24", html)
+        self.assertIn("view-chip", html)
+        self.assertIn("👀 24 阅读", html)
         self.assertIn("订阅 / SUBSCRIBE", html)
         self.assertIn("打开掘金主页", html)
 
@@ -504,6 +504,11 @@ class HudFilledContentTests(unittest.TestCase):
         self.assertIn('id="soundToggleBtn"', html)
         self.assertIn('id="soundIcon"', html)
         self.assertIn('id="soundStatusText"', html)
+
+    def test_hero_panel_is_centered(self):
+        html = self.files["index.html"]
+        self.assertIn("hero-panel", html)
+        self.assertIn(".hero-panel { text-align: center; }", self.files["assets/site.css"])
 
     def test_boot_has_ttl_and_replay_affordance(self):
         js = self.files["assets/site.js"]

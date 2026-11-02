@@ -289,7 +289,15 @@ html.no-boot .boot-overlay { display: none; }
 .blog-stat { font-family: var(--font-mono); }
 .blog-stat b { display: block; font-size: 1.3rem; color: var(--accent-cyan); font-weight: 600; }
 .blog-stat span { font-size: 10px; letter-spacing: 1px; color: var(--text-dim); }
-.like-chip { font-family: var(--font-mono); font-size: 10px; color: var(--accent-gold); border: 1px solid rgba(226, 183, 20, .35); padding: 1px 6px; }
+.view-chip { font-family: var(--font-mono); font-size: 10px; color: var(--accent-gold); border: 1px solid rgba(226, 183, 20, .35); padding: 1px 6px; }
+
+/* 首屏居中 */
+.hero-panel { text-align: center; }
+.hero-panel .kicker { justify-content: center; }
+.hero-panel .hero-manifesto { margin-left: auto; margin-right: auto; }
+.hero-panel .operator-file { display: inline-block; text-align: left; margin-top: 16px; }
+.hero-panel .telemetry { justify-content: center; }
+.hero-panel .action-row { justify-content: center; }
 
 .radar-coords { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-top: 8px; letter-spacing: .5px; }
 .radar-coords b { color: var(--accent-cyan); font-weight: 600; }

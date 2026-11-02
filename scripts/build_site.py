@@ -1085,7 +1085,7 @@ def render_overview_hud(spec: dict) -> str:
     site = spec.get("site", {}) or {}
     parts = [_hud_section_head("01", "概览", "OVERVIEW", home.get("lede", ""))]
     parts.append('<div class="grid-2">')
-    parts.append('<section class="panel">')
+    parts.append('<section class="panel hero-panel">')
     parts.append(f'<div class="kicker" data-bind="home.hero.tagline">{esc(hero.get("tagline", ""))}</div>')
     headline = f'<span data-bind="home.hero.title">{esc(hero.get("title", ""))}</span>'
     if hero.get("highlight"):
@@ -1096,7 +1096,7 @@ def render_overview_hud(spec: dict) -> str:
         rows = []
         for label, value in operator.items():
             rows.append(f'<div class="stat-row"><span>{esc(label)}</span><span class="stat-val">{esc(value)}</span></div>')
-        parts.append(f'<div class="sidebar-stats" style="margin-top:16px;">{"".join(rows)}</div>')
+        parts.append(f'<div class="operator-file">{"".join(rows)}</div>')
     for index, paragraph in enumerate(hero.get("paragraphs", []) or ([hero["bio"]] if hero.get("bio") else [])):
         parts.append(f'<p class="hero-manifesto" data-bind="home.hero.paragraph.{index}">{esc(paragraph)}</p>')
     live = home.get("live", []) or []
@@ -1266,8 +1266,8 @@ def render_blog_hud(spec: dict) -> str:
         links = []
         if item.get("tags"):
             links += [f'<span class="mission-tag">{esc(tag)}</span>' for tag in item["tags"]]
-        if item.get("likes") is not None:
-            links.append(f'<span class="like-chip">♥ {esc(item["likes"])}</span>')
+        if item.get("views") is not None:
+            links.append(f'<span class="view-chip">👀 {esc(item["views"])} 阅读</span>')
         if links:
             parts.append(f'<div class="log-links">{"".join(links)}</div>')
         parts.append("</div>")

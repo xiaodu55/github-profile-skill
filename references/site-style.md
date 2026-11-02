@@ -78,7 +78,7 @@
 | `projects.items[].code` / `.metrics[]` | 项目卡的编号标签与指标胶囊 |
 | `projects.stack.groups[]` | 武器库技术栈表（分组 → 条目） |
 | `projects.chrono[]` | 经历线（`period` / `title` / `detail`） |
-| `learning.items[]` | 个人博客条目（标题 / 链接 / 日期 / 标签 / 摘要 / `likes` 点赞数） |
+| `learning.items[]` | 个人博客条目（标题 / 链接 / 日期 / 标签 / 摘要 / `views` 阅读量） |
 | `learning.stats[]` | 博客页顶部统计（`[标签, 值]`） |
 | `learning.platforms` | 平台说明句 |
 | `learning.cta` | 订阅面板（`text` / `url`） |
