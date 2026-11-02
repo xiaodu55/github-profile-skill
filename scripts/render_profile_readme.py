@@ -282,7 +282,9 @@ def social_link(platform: str, username: str) -> str:
     template = SOCIAL_URLS.get(platform)
     if template:
         return template.format(u=username)
-    if platform in ("portfolio", "blog", "resume", "website", "email"):
+    if platform == "email":
+        return f"mailto:{username}"
+    if platform in ("portfolio", "blog", "resume", "website"):
         return username
     return f"https://{platform}/{username}"
 

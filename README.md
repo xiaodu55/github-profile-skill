@@ -39,7 +39,7 @@ github-profile-skill/
 │   └── check_profile_readme.py          # README 静态自检
 ├── examples/
 │   └── README.data-narrative.example.md # 填好的样例（虚构数据），可直接看成品
-└── tests/                               # 58 条离线单元测试
+└── tests/                               # 67 条离线单元测试
 ```
 
 ## 安装
@@ -90,7 +90,7 @@ python3 scripts/build_intake.py --user <github-handle> --facts facts.json
 # 按 spec 渲染 README
 python3 scripts/render_profile_readme.py --spec assets/profile.example.json --facts facts.json --out README.md
 
-# 生成静态个人网站
+# 生成静态个人网站（RSS 不抓取时加 --no-rss）
 python3 scripts/build_site.py --spec assets/site.example.json --out site/
 
 # 自检生成的 README
@@ -115,7 +115,7 @@ python3 scripts/check_profile_readme.py README.md --username <github-handle>
 python3 -m unittest discover -s tests -t . -v
 ```
 
-58 条用例全部通过（自检脚本 19 条、取数脚本 4 条、渲染器 14 条、问卷 8 条、站点 13 条），全部离线运行；CI 在 Ubuntu 与 Windows 上各跑一遍，并额外校验样例 README 仍然零错误。
+67 条用例全部通过（自检脚本 19 条、取数脚本 4 条、渲染器 15 条、问卷 8 条、站点 21 条），全部离线运行；CI 在 Ubuntu 与 Windows 上各跑一遍，并额外校验样例 README 仍然零错误。
 
 ## 参考来源
 

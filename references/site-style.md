@@ -53,13 +53,24 @@
 
 | 预设 | 可见差异 | 适合 |
 | --- | --- | --- |
-| `hybrid`（默认推荐） | 蓝色链接、卡片圆角 0.5rem、条目带 `01/02` 序号、`h2` 下有分隔线、当前导航项浅灰底 | 大多数人：干净、现代、信息密度适中 |
+| `hybrid`（默认推荐） | **两者混合**：shadcn 的令牌体系与 0.5rem 卡片圆角 + 轻投影，配 runoob 的蓝色链接（带下划线与偏移）、`01/02` 序号、`h2` 分隔线 | 大多数人：干净、现代、信息密度适中 |
 | `shadcn-neutral` | 全中性无彩度、链接黑色带下划线、卡片圆角 0.75rem 并带极轻投影、`h2` 无分隔线、当前导航项反白（主色底） | 喜欢极简克制的技术风 |
 | `runoob-classic` | 15px 字号、顶栏不吸顶、卡片直角、条目无序号、`h1` 下有分隔线、链接全部带下划线、标签方角 | 偏教程/文档气质、信息量大 |
 
 预设通过 `<body class="preset-xxx">` 生效，用户也可以在 spec 的 `theme` 里覆盖单个变量（`primary`、`link`、`radius` 等）。
 
-## 五、要不要问用户的站点问题
+## 五、学习笔记页放博客内容
+
+学习页不写正文，只做**索引**：顶部一张博客卡片（标题 + 链接 + 简介），下面列出最近文章。
+
+- `learning.blog.url`：博客地址
+- `learning.blog.rss`：RSS 地址；填了就会在生成时抓取最近若干篇的标题、链接与日期，列在页面上
+- `learning.blog.limit`：最多列几篇（默认 8）
+- `learning.items[]`：手写条目（不接 RSS 时的补充）
+
+抓取失败不阻断生成——博客暂时取不到就只保留卡片。命令行加 `--no-rss` 可以完全跳过抓取（离线或 CI 里用）。
+
+## 六、要不要问用户的站点问题
 
 在采集问卷里新增"个人网站"一组：
 
@@ -70,16 +81,28 @@
 - 联系方式要不要一键复制？
 - 部署到哪？（`<user>.github.io` 独立仓库 / 主页仓库的 `docs/` 目录）
 
-## 六、部署
+## 七、部署
 
 两种常见方式，都不需要构建工具：
 
-1. **独立仓库**：新建 `<user>.github.io` 仓库，把生成目录里的文件放仓库根，Settings → Pages → Source 选 `main` 分支根目录。
-2. **主页仓库的 `docs/`**：把生成目录放进 `<user>/<user>` 仓库的 `docs/`，Pages 的 Source 选 `main` 分支 `/docs`。
+1. **独立仓库 `<user>.github.io`**：新建仓库（名字必须正好是 `<用户名>.github.io`），把生成目录里的文件放仓库根，Settings → Pages → Source 选 `main` 分支、根目录。生成器已经会写好 `.nojekyll`，避免 Pages 走 Jekyll 解析。
+2. **主页仓库的 `docs/`**：把生成目录放进 `<user>/<user>` 仓库的 `docs/`，Pages 的 Source 选 `main` 分支、`/docs`。
 
 两种方式下站内链接都是相对路径（`open-source.html`），无需改。
 
-## 七、注意事项
+独立仓库的完整步骤：
+
+```bash
+cd site
+git init -b main
+git add .
+git commit -m "docs: 更新个人站点"
+gh repo create xiaodu55.github.io --public --source=. --remote=origin --push
+# 然后到仓库 Settings → Pages → Build and deployment → Source 选 Deploy from a branch
+# 分支 main，目录 / (root)，保存后等一两分钟
+```
+
+## 八、注意事项
 
 - 站点是静态 HTML + 一份 CSS + 一份 JS，零依赖、零构建，10 年后照样能打开。
 - 所有数字与 PR 记录必须来自 GitHub 公开数据或用户口述，末尾写明数据来源与截止日期。

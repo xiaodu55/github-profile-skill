@@ -387,6 +387,11 @@ main {
 }
 
 /* ---- 风格预设差异：让三种风格真的看起来不同 ---- */
+body.preset-hybrid { line-height: 1.72; }
+body.preset-hybrid .prose a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in oklch, var(--link) 45%, transparent); }
+body.preset-hybrid .entry { box-shadow: 0 1px 2px rgb(0 0 0 / 4%); }
+body.preset-hybrid .stats li { box-shadow: 0 1px 2px rgb(0 0 0 / 4%); }
+
 body.preset-shadcn-neutral { --radius: 0.75rem; }
 body.preset-shadcn-neutral .entry,
 body.preset-shadcn-neutral .stats li { box-shadow: 0 1px 2px rgb(0 0 0 / 5%); }
@@ -463,6 +468,62 @@ def render_css(theme: dict) -> str:
         css = css.replace(token, value)
     return css
 
+
+
+def parse_rss(xml_text: str, limit: int = 8) -> list[dict]:
+    """从 RSS/Atom 文本里取最近若干条（标题、链接、日期）。"""
+    import xml.etree.ElementTree as ET
+
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return []
+
+    def _text(node, names):
+        for name in names:
+            found = node.find(name)
+            if found is not None and (found.text or "").strip():
+                return found.text.strip()
+        return ""
+
+    def _link(node):
+        link = node.find("link")
+        if link is not None:
+            if (link.text or "").strip():
+                return link.text.strip()
+            href = link.get("href")
+            if href:
+                return href.strip()
+        guid = node.find("guid")
+        if guid is not None and (guid.text or "").strip().startswith("http"):
+            return guid.text.strip()
+        return ""
+
+    entries = []
+    for node in list(root.iter("item")) + list(root.iter("{http://www.w3.org/2005/Atom}entry")):
+        title = _text(node, ["title", "{http://www.w3.org/2005/Atom}title"])
+        url = _link(node)
+        if not title or not url:
+            continue
+        date = _text(node, ["pubDate", "updated", "{http://www.w3.org/2005/Atom}updated", "{http://purl.org/dc/elements/1.1/}date"])
+        entries.append({"title": title, "url": url, "date": date})
+        if len(entries) >= limit:
+            break
+    return entries
+
+
+def fetch_rss(url: str, limit: int = 8) -> list[dict]:
+    """抓取 RSS 源；失败返回空列表，不影响站点生成。"""
+    if not url:
+        return []
+    import urllib.request
+
+    request = urllib.request.Request(url, headers={"User-Agent": "github-profile-skill"})
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            return parse_rss(response.read().decode("utf-8", "replace"), limit)
+    except Exception:
+        return []
 
 def _nav_html(nav: list[dict], current: str) -> str:
     items = []
@@ -667,6 +728,24 @@ def render_learning(spec: dict, nav: list[dict]) -> str:
     parts.append(f"<h1>{esc(section.get('title', '学习笔记'))}</h1>")
     if section.get("lede"):
         parts.append(f'<p class="lede">{esc(section["lede"])}</p>')
+    blog = section.get("blog") or {}
+    if blog.get("title") or blog.get("url"):
+        parts.append('<div class="entries">')
+        parts.append('<article class="entry">')
+        parts.append('<div class="entry__title">')
+        title = esc(blog.get("title") or "博客")
+        if blog.get("url"):
+            title = f'<a href="{esc(blog["url"])}">{title}</a>'
+        parts.append(f"<h3>{title}</h3>")
+        if blog.get("rss"):
+            parts.append(f'<span class="tag">RSS</span>')
+        parts.append("</div>")
+        if blog.get("summary"):
+            parts.append(f"<p>{esc(blog['summary'])}</p>")
+        if blog.get("url"):
+            parts.append(f'<a class="entry__all" href="{esc(blog["url"])}">打开博客 ↗</a>')
+        parts.append("</article>")
+        parts.append("</div>")
     items = section.get("items", []) or []
     if items:
         parts.append('<div class="entries">')
@@ -707,7 +786,8 @@ def build_nav(spec: dict) -> list[dict]:
     return nav
 
 
-def build_site(spec: dict) -> dict[str, str]:
+def build_site(spec: dict, fetch_posts: bool = True) -> dict[str, str]:
+    """生成站点文件。fetch_posts=True 时会按 learning.blog.rss 拉取最新文章。"""
     site = spec.get("site", {})
     base = {
         "title": site.get("title", ""),
@@ -716,6 +796,17 @@ def build_site(spec: dict) -> dict[str, str]:
         "description": site.get("description", ""),
     }
     nav = build_nav(spec)
+    learning = spec.get("learning") or {}
+    blog = learning.get("blog") or {}
+    if fetch_posts and blog.get("rss"):
+        posts = fetch_rss(blog["rss"], limit=blog.get("limit", 8))
+        if posts:
+            learning = dict(learning)
+            learning["items"] = [
+                {"title": post["title"], "url": post["url"], "date": post.get("date", ""), "tags": ["博客"]}
+                for post in posts
+            ] + list(learning.get("items", []) or [])
+            spec = {**spec, "learning": learning}
     preset = spec.get("theme", {}).get("preset", "hybrid")
     body_class = f"preset-{preset}"
     theme = dict(THEMES[spec.get("theme", {}).get("preset", "hybrid")])
@@ -751,6 +842,7 @@ def build_site(spec: dict) -> dict[str, str]:
         )
 
     files["assets/site.css"] = render_css(theme)
+    files[".nojekyll"] = ""
     files["assets/site.js"] = JS_SOURCE
     files["404.html"] = _shell(
         page="404.html",
@@ -769,6 +861,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="生成静态个人网站")
     parser.add_argument("--spec", required=True, help="site spec JSON 路径")
     parser.add_argument("--out", required=True, help="输出目录")
+    parser.add_argument("--no-rss", action="store_true", help="不抓取 learning.blog.rss 的最新文章")
     args = parser.parse_args(argv)
 
     try:
@@ -785,7 +878,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"未知主题预设：{preset}，可选 {', '.join(THEMES)}", file=sys.stderr)
         return 2
 
-    files = build_site(spec)
+    files = build_site(spec, fetch_posts=not args.no_rss)
     out = Path(args.out)
     for name, content in files.items():
         target = out / name

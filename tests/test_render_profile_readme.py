@@ -55,6 +55,12 @@ class IconTests(unittest.TestCase):
             "https://github.com/ada",
         )
 
+    def test_email_uses_mailto_scheme(self):
+        self.assertEqual(
+            render_profile_readme.social_link("email", "me@example.org"),
+            "mailto:me@example.org",
+        )
+
     def test_unknown_social_falls_back_to_path(self):
         self.assertEqual(render_profile_readme.social_link("example", "ada"), "https://example/ada")
 

@@ -4,6 +4,7 @@
 import importlib.util
 import sys
 import unittest
+import unittest.mock
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).parents[1] / "scripts" / "build_site.py"
@@ -124,6 +125,48 @@ class ThemeTests(unittest.TestCase):
 
     def test_missing_spec_file_returns_error_code(self):
         self.assertEqual(build_site.main(["--spec", "definitely-missing.json", "--out", "out"]), 2)
+
+
+RSS_XML = """<?xml version="1.0"?>
+<rss version="2.0"><channel><title>Blog</title>
+<item><title>第一篇：Agent 运行时边界</title><link>https://example.org/p1</link><pubDate>Mon, 05 Oct 2026 10:00:00 +0800</pubDate></item>
+<item><title>第二篇：Windows 上的并发陷阱</title><link>https://example.org/p2</link><pubDate>Sun, 04 Oct 2026 10:00:00 +0800</pubDate></item>
+</channel></rss>"""
+
+
+class RssTests(unittest.TestCase):
+    def test_parses_items_from_rss(self):
+        posts = build_site.parse_rss(RSS_XML)
+        self.assertEqual(len(posts), 2)
+        self.assertEqual(posts[0]["title"], "第一篇：Agent 运行时边界")
+        self.assertEqual(posts[0]["url"], "https://example.org/p1")
+
+    def test_returns_empty_on_broken_xml(self):
+        self.assertEqual(build_site.parse_rss("not xml"), [])
+
+    def test_learning_page_renders_blog_card(self):
+        data = {**SPEC_DATA, "learning": {"blog": {"title": "我的博客", "url": "https://example.org/blog"}}}
+        html = build_site.build_site(data, fetch_posts=False)["learning.html"]
+        self.assertIn("我的博客", html)
+        self.assertIn("打开博客 ↗", html)
+
+    def test_rss_posts_are_listed_on_learning_page(self):
+        data = {**SPEC_DATA, "learning": {"blog": {"title": "博客", "url": "https://example.org/blog", "rss": "https://example.org/rss.xml"}}}
+        with unittest.mock.patch.object(build_site, "fetch_rss", return_value=build_site.parse_rss(RSS_XML)):
+            html = build_site.build_site(data)["learning.html"]
+        self.assertIn("第一篇：Agent 运行时边界", html)
+        self.assertIn("https://example.org/p1", html)
+
+    def test_nojekyll_is_emitted(self):
+        self.assertIn(".nojekyll", build_site.build_site(SPEC_DATA))
+
+
+class HybridPresetTests(unittest.TestCase):
+    def test_hybrid_keeps_runoob_links_and_shadcn_radius(self):
+        css = build_site.build_site({**SPEC_DATA, "theme": {"preset": "hybrid"}})["assets/site.css"]
+        self.assertIn("body.preset-hybrid", css)
+        self.assertIn("text-underline-offset", css)
+        self.assertIn("--radius: 0.5rem", css)
 
 
 class ScriptTests(unittest.TestCase):
